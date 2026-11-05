@@ -1,0 +1,33 @@
+# Python runtime and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local game state and editor settings
+save.json
+settings.json
+.vscode/
+.idea/
+
+# Local backups and temporary files
+*.tmp
+*.before*
+*.backup.py
+*.stage1-backup.py
+
+# Local builds and Android exports
+build/
+dist/
+export/
+*.apk
+*.aab
+
+# Licensed soundtrack files are supplied locally by the game owner.
+resonance.mp3
+weeks.mp3
+comfort.mp3
+school.mp3
+numbers.mp3
+undertale.mp3
