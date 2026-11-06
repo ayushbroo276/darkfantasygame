@@ -15,11 +15,13 @@ music selection, settings, and saved progress.
   on this machine; keyboard/mouse interaction has not been physically tested.
   The package is available at
   `godot_project/build/windows/DreamcoreParkour-Windows.zip`.
-- **Android:** no APK is included. The Godot project has landscape/touch support,
-  and a debug-signed preview APK has been built and signature-checked. It has not
-  been installed or tested on a phone and is not signed with a production release
-  key. Download the preview APK from the GitHub Releases page when available.
-- **GitHub release:** no APK release has been published.
+- **Android:** a debug-signed preview APK is available from the release below.
+  The Godot project has landscape/touch support; the APK has been signature-
+  checked but not installed or tested on a phone and is not signed with a
+  production release key. Download it from the
+  [Android Preview release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview).
+- **GitHub release:** [Android Preview 0.1.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview)
+  (pre-release; device testing pending).
 
 ## Run on desktop
 

@@ -17,6 +17,8 @@ The portable Windows package is generated under `build/windows/`. A debug-signed
 Android APK is generated under `build/android/`. Its signature and package
 metadata have been verified, but it has not been installed or tested on a phone.
 It is a preview build, not a Play Store/release-key-signed APK.
+The APK is available from the
+[Android Preview GitHub release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview).
 
 Only the existing zone textures, generated ambience WAVs, and game SFX are
 packaged. The MP3 soundtrack is intentionally not copied: its redistribution
