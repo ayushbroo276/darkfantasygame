@@ -16,6 +16,7 @@ settings.json
 *.before*
 *.backup.py
 *.stage1-backup.py
+.godot/
 
 # Local builds and Android exports
 build/

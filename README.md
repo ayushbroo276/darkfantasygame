@@ -6,12 +6,19 @@ music selection, settings, and saved progress.
 
 ## Status
 
-- **Desktop:** the Ursina project targets desktop Python and is the version currently
-  in this repository.
-- **Android:** no Android APK is included. Ursina 8.3.0/Panda3D 1.10.16 in this
-  project uses the desktop runtime; adding touch controls alone would not make it an
-  Android application. A real mobile release needs an Android-capable engine/runtime
-  port and device testing.
+- **Ursina:** the original Python project remains at the repository root and is
+  unchanged. It continues to target desktop Python.
+- **Godot:** a separate GDScript port is in [`godot_project`](./godot_project/).
+  Its Godot 4.7.2 headless startup and gameplay smoke tests cover all six zones,
+  movement, jumping, sprinting, wall-running, checkpoints, moving/timed platforms,
+  and the principal menus. A portable Windows export has been built and launched
+  on this machine; keyboard/mouse interaction has not been physically tested.
+  The package is available at
+  `godot_project/build/windows/DreamcoreParkour-Windows.zip`.
+- **Android:** no APK is included. The Godot project has landscape/touch support,
+  and a debug-signed preview APK has been built and signature-checked. It has not
+  been installed or tested on a phone and is not signed with a production release
+  key. Download the preview APK from the GitHub Releases page when available.
 - **GitHub release:** no APK release has been published.
 
 ## Run on desktop
@@ -24,6 +31,17 @@ python main.py
 ```
 
 Gameplay starts in fullscreen. Press **F11** to toggle fullscreen.
+
+## Run the Godot port
+
+Install Godot 4.7 or later, open the `godot_project` directory, and run the main
+scene. It targets 30 FPS with low-cost rendering defaults. Windows controls are
+WASD, mouse look, **Space** to jump, **Left Shift** to sprint, **E** to wall-run,
+and **Escape** to pause. Android uses a virtual joystick, touch camera, and
+on-screen action buttons.
+
+The Godot port keeps its saves in Godot's per-user `user://` folder; it does not
+modify or reuse the Ursina `save.json`.
 
 ## Controls
 
@@ -62,9 +80,10 @@ Run the same syntax check used by the GitHub Actions workflow:
 python -m py_compile main.py game_zones.py
 ```
 
-## Android next steps
+## Android preview limitations
 
-Do not treat this desktop project as an APK. A mobile port needs a supported
-Android rendering/runtime path, touch input and responsive UI, Android audio and
-asset integration, and tests on real devices. The current project has not passed
-those checks, so there is no APK build or install instruction to provide yet.
+The Android APK is a debug-signed preview (`arm64-v8a` and `armeabi-v7a`, minimum
+Android 7.0/API 24). It has passed signature and manifest checks but has not been
+installed or tested on a phone; joystick, camera, fullscreen, and safe-area
+behavior remain unverified on physical hardware. It is not signed with a
+production release key and should not be submitted to an app store.
