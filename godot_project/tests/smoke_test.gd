@@ -30,6 +30,12 @@ func _run() -> void:
 	var screens: Dictionary = game.get("screens")
 	for screen_name in ["title", "chapters", "new_game", "settings", "soundtrack", "controls", "pause", "complete"]:
 		_expect(screens.has(screen_name), "%s screen is present" % screen_name)
+	_expect(ProjectSettings.get_setting("rendering/textures/vram_compression/import_etc2_astc"), "Android ETC2/ASTC texture import is enabled")
+	for zone_number in range(1, ZoneData.ZONES.size() + 1):
+		var zone: Dictionary = ZoneData.zone(zone_number)
+		for texture_key in ["wall", "floor", "platform", "ceiling"]:
+			var texture_path := "res://assets/%s/%s.png" % [zone["folder"], zone[texture_key]]
+			_expect(ResourceLoader.exists(texture_path), "zone %d %s texture is present" % [zone_number, texture_key])
 
 	game.call("_set_screen", "chapters")
 	_expect(game.get("active_screen") == "chapters" and screens["chapters"].visible, "chapter menu opens")
@@ -51,6 +57,11 @@ func _run() -> void:
 	var player := game.get("player") as CharacterBody3D
 	_expect(game.get("gameplay_active") and game.get("current_zone") == 1, "zone 1 starts")
 	_expect(game.get("platforms").size() >= 20, "nearby course platforms stream in")
+	var wall_material := game.get("wall_material") as StandardMaterial3D
+	_expect(wall_material.albedo_texture != null and wall_material.uv1_triplanar and wall_material.uv1_world_triplanar, "wall textures use world-scaled triplanar mapping")
+	var first_platform_material := (game.get("platforms") as Dictionary)[0]["body"].get_child(1).material_override as StandardMaterial3D
+	_expect(first_platform_material.uv1_scale.is_equal_approx(Vector3(3.0, 2.0, 1.0)), "bridge and platform textures fill each box face correctly")
+	_expect(first_platform_material.texture_repeat, "bridge and platform textures repeat without stretching")
 
 	var starting_z := player.global_position.z
 	Input.action_press("move_forward")
@@ -183,7 +194,18 @@ func _run() -> void:
 	await process_frame
 	_expect(game.get("gameplay_active") and game.get("current_zone") == 2, "completion menu advances to the next chapter")
 
+	game.set("music_library_path", "user://smoke_test_music")
+	var sample_song_path := ProjectSettings.globalize_path("res://assets/audio/game_sfx.wav")
+	game.call("_on_desktop_audio_selected", sample_song_path)
+	var custom_tracks: Array = game.get("custom_music_tracks")
+	_expect(custom_tracks.size() == 1, "custom audio is added to the soundtrack library")
+	_expect(game.get("selected_music_path") == custom_tracks[0]["path"], "imported audio is selected and persisted")
+	_expect(FileAccess.file_exists(str(custom_tracks[0]["path"])), "imported audio is copied into the app music library")
+	var ambience_player := game.get("ambience_player") as AudioStreamPlayer
+	_expect(ambience_player.stream is AudioStreamWAV, "imported WAV is loaded into the music player")
+	_expect(ambience_player.playing, "selected WAV audio plays as a loop (playing=%s)" % ambience_player.playing)
 	game.call("_select_ambience", 3)
+	_expect(str(game.get("selected_music_path")).is_empty(), "switching to zone ambience clears the custom song")
 	_expect(game.get("selected_ambience") == 3, "soundtrack selection persists")
 	var all_unlocked: Array = game.get("unlocked_zones")
 	for zone_number in range(3, 7):
@@ -196,6 +218,11 @@ func _run() -> void:
 	game.call("_return_to_title")
 	game.queue_free()
 	await process_frame
+	var test_music_directory := ProjectSettings.globalize_path("user://smoke_test_music")
+	if DirAccess.dir_exists_absolute(test_music_directory):
+		for music_file in DirAccess.get_files_at(test_music_directory):
+			DirAccess.remove_absolute(test_music_directory.path_join(music_file))
+		DirAccess.remove_absolute(test_music_directory)
 	for path in ["user://smoke_test_progress.json", "user://smoke_test_settings.cfg"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

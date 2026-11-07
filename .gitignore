@@ -22,6 +22,7 @@ settings.json
 build/
 dist/
 export/
+godot_project/android/
 *.apk
 *.aab
 

@@ -8,22 +8,31 @@ project remains in the repository root and is not modified by the port.
 The project has passed Godot 4.7.2 headless startup and the automated gameplay
 smoke test in `tests/smoke_test.gd`. The test exercises movement, jumping,
 sprinting, wall-running, checkpoint landing/saving, moving and timed platforms,
-pause/resume, completion/unlocks, and loading all six zones. A portable Windows
-export was built and launched in both headless and desktop modes on Intel
-integrated graphics. Input was simulated by the smoke test, not verified with a
-physical keyboard, mouse, touchscreen, or phone.
+pause/resume, completion/unlocks, loading all six zones, texture mapping, and
+custom-audio import/playback. A portable Windows export was built and launched
+in both headless and desktop modes on Intel integrated graphics. Input was
+simulated by the smoke test, not verified with a physical keyboard, mouse,
+touchscreen, or phone.
 
 The portable Windows package is generated under `build/windows/`. A debug-signed
 Android APK is generated under `build/android/`. Its signature and package
 metadata have been verified, but it has not been installed or tested on a phone.
 It is a preview build, not a Play Store/release-key-signed APK.
-The APK is available from the
-[Android Preview GitHub release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview).
+The updated APK passed Android export, signature, and manifest checks. No
+Android device was connected, so the APK and phone audio picker have not been
+tested on physical hardware. Publishing the updated APK is pending GitHub
+authorization; the existing
+[Android Preview GitHub release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview)
+contains the earlier build.
 
 Only the existing zone textures, generated ambience WAVs, and game SFX are
 packaged. The MP3 soundtrack is intentionally not copied: its redistribution
-rights have not been established. The in-game soundtrack picker uses the
-included zone ambience.
+rights have not been established. Open **Soundtrack** and choose **ADD SONG
+FROM PHONE** on Android (or **ADD SONG** on desktop) to import an MP3, OGG, or
+WAV you have permission to use. Android opens the system document picker; the
+selected file is copied into the app's private music library and can then be
+selected in the soundtrack list. Imported songs are not bundled with the game
+and are removed when the app is uninstalled.
 
 ## Run in Godot
 
@@ -31,6 +40,11 @@ Open this directory in Godot 4.7 or later and run the main scene. The Windows
 controls are WASD, mouse look, Space, Left Shift, E (wall-run), and Escape.
 Android uses a landscape virtual joystick, touch camera, jump, sprint, wall-run,
 and settings controls.
+
+To select music stored on your phone, open **Soundtrack**, tap **ADD SONG FROM
+PHONE**, select an MP3, OGG, or WAV in Android's document picker, then choose
+the imported title from the list. Phone-picker operation has not yet been
+verified on a physical Android device.
 
 Run the headless smoke test from the repository root:
 
@@ -47,9 +61,9 @@ version from the repository root:
 
 Distribute the generated executable and its adjacent `.pck` file together.
 
-To create the Android preview APK, configure a compatible Android SDK and Java
-installation in Godot Editor Settings, install Android export templates, and run
-from the repository root:
+To create the Android preview APK, install the matching Android export templates
+and Gradle build template. Configure JDK 17 and Android SDK 36 (including
+Build-Tools 36.1.0) in Godot Editor Settings, then run from the repository root:
 
 ```powershell
 & 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --export-debug Android '.\godot_project\build\android\dreamcore-parkour-debug.apk'

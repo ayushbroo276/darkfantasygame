@@ -5,6 +5,7 @@ const PlayerScript = preload("res://scripts/player_controller.gd")
 
 const SAVE_PATH := "user://progress.json"
 const SETTINGS_PATH := "user://settings.cfg"
+const MUSIC_LIBRARY_PATH := "user://music"
 const STREAM_BACK := 3
 const STREAM_FORWARD := 22
 const SECTION_NAMES := ["INTRODUCTION", "FLOATING STAIRS", "MOVING CROSSING", "WALL-RUN GALLERY", "TIMED HALL", "HIDDEN PASSAGE", "FINAL ASCENT"]
@@ -22,6 +23,7 @@ var current_zone := 1
 var saved_current_zone := 1
 var progress_path := SAVE_PATH
 var settings_path := SETTINGS_PATH
+var music_library_path := MUSIC_LIBRARY_PATH
 var unlocked_zones: Array[int] = [1]
 var checkpoint_by_zone: Dictionary = {}
 var best_times: Dictionary = {}
@@ -44,8 +46,13 @@ var elapsed_time := 0.0
 var checkpoint_notice_time := 0.0
 var tutorial_notice_time := 0.0
 var selected_ambience := 1
+var selected_music_path := ""
+var selected_music_name := ""
+var custom_music_tracks: Array[Dictionary] = []
 var ambience_player: AudioStreamPlayer
 var sfx_player: AudioStreamPlayer
+var audio_picker
+var music_file_dialog: FileDialog
 var screens: Dictionary = {}
 var ui_root: Control
 var hud: Control
@@ -64,6 +71,8 @@ var chapter_details: Label
 var current_zone_config: Dictionary
 var completion_next_button: Button
 var completion_description_label: Label
+var soundtrack_tracks_container: VBoxContainer
+var soundtrack_status_label: Label
 
 
 func _ready() -> void:
@@ -75,6 +84,7 @@ func _ready() -> void:
 	_create_player()
 	_create_audio()
 	_create_interface()
+	_connect_android_audio_picker()
 	get_viewport().size_changed.connect(_apply_safe_area)
 	_apply_safe_area()
 	_set_screen("title")
@@ -154,12 +164,30 @@ func _create_audio() -> void:
 	if sfx != null:
 		sfx_player.stream = sfx
 	add_child(sfx_player)
+	music_file_dialog = FileDialog.new()
+	music_file_dialog.title = "Choose a song"
+	music_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	music_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	music_file_dialog.add_filter("*.mp3", "MP3 audio")
+	music_file_dialog.add_filter("*.ogg", "Ogg Vorbis audio")
+	music_file_dialog.add_filter("*.wav", "WAV audio")
+	music_file_dialog.file_selected.connect(_on_desktop_audio_selected)
+	add_child(music_file_dialog)
+
+
+func _connect_android_audio_picker() -> void:
+	if not is_mobile or not Engine.has_singleton("AudioPicker"):
+		return
+	audio_picker = Engine.get_singleton("AudioPicker")
+	audio_picker.audio_selected.connect(_on_android_audio_selected)
+	audio_picker.audio_picker_cancelled.connect(_on_audio_picker_cancelled)
+	audio_picker.audio_picker_error.connect(_on_audio_picker_error)
 
 
 func _input(event: InputEvent) -> void:
 	if (event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel")) and not event.is_echo():
 		if gameplay_active:
-			if active_screen == "settings":
+			if active_screen == "settings" or active_screen == "soundtrack":
 				_set_screen(previous_screen)
 			elif game_paused:
 				_set_paused(false)
@@ -312,13 +340,18 @@ func _apply_zone_atmosphere() -> void:
 	environment.fog_density = 0.0065 if str(settings["graphics"]) == "low" else 0.008
 	environment.ambient_light_color = config["wall_color"].lightened(0.18)
 	platform_material = _make_material(config["platform"], config["folder"], config["platform_color"])
-	wall_material = _make_material(config["wall"], config["folder"], config["wall_color"])
-	floor_material = _make_material(config["floor"], config["folder"], config["floor_color"])
+	wall_material = _make_material(config["wall"], config["folder"], config["wall_color"], true)
+	floor_material = _make_material(config["floor"], config["folder"], config["floor_color"], true)
 
 
-func _make_material(texture_name: String, folder: String, fallback: Color) -> StandardMaterial3D:
+func _make_material(texture_name: String, folder: String, fallback: Color, world_triplanar := false) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = fallback
+	material.texture_repeat = true
+	if world_triplanar:
+		material.uv1_triplanar = true
+		material.uv1_world_triplanar = true
+		material.uv1_scale = Vector3(0.28, 0.28, 0.28)
 	var texture_path := "res://assets/%s/%s.png" % [folder, texture_name]
 	var texture := load(texture_path) as Texture2D
 	if texture != null:
@@ -326,6 +359,14 @@ func _make_material(texture_name: String, folder: String, fallback: Color) -> St
 		material.albedo_color = Color.WHITE
 	material.roughness = 0.92
 	return material
+
+
+func _box_material(source: Material) -> Material:
+	if source is StandardMaterial3D and not source.uv1_triplanar:
+		var tiled := source.duplicate() as StandardMaterial3D
+		tiled.uv1_scale = Vector3(3.0, 2.0, 1.0)
+		return tiled
+	return source
 
 
 func _create_zone_shell() -> void:
@@ -477,7 +518,7 @@ func _add_box_body(parent: Node3D, position: Vector3, dimensions: Vector3, mater
 	var mesh := BoxMesh.new()
 	mesh.size = dimensions
 	mesh_instance.mesh = mesh
-	mesh_instance.material_override = material
+	mesh_instance.material_override = _box_material(material)
 	body.add_child(mesh_instance)
 	parent.add_child(body)
 	return body
@@ -488,7 +529,7 @@ func _add_box_mesh(parent: Node3D, position: Vector3, dimensions: Vector3, mater
 	var mesh := BoxMesh.new()
 	mesh.size = dimensions
 	instance.mesh = mesh
-	instance.material_override = material
+	instance.material_override = _box_material(material)
 	instance.position = position
 	parent.add_child(instance)
 	return instance
@@ -529,7 +570,7 @@ func _spawn_platform(index: int) -> void:
 	var mesh_instance := body.get_child(1) as MeshInstance3D
 	if kind == "normal":
 		var tint := Color.from_hsv(fposmod(index * 0.052, 1.0), 0.14, 0.96)
-		var tinted := platform_material.duplicate() as StandardMaterial3D
+		var tinted := (mesh_instance.material_override as StandardMaterial3D).duplicate() as StandardMaterial3D
 		tinted.albedo_color = tint if tinted.albedo_texture == null else Color.WHITE
 		mesh_instance.material_override = tinted
 	if index % ZoneData.CHECKPOINT_SPACING == ZoneData.CHECKPOINT_SPACING - 1:
@@ -753,20 +794,54 @@ func _set_screen(screen_name: String) -> void:
 
 
 func _start_ambience() -> void:
-	if not gameplay_active:
+	_start_music()
+
+
+func _start_music(preview := false) -> void:
+	if not gameplay_active and not preview:
 		return
-	var track := selected_ambience
-	if track < 1 or track > 6:
-		track = current_zone
-	var path := "res://assets/audio/zone%d_ambient.wav" % track
-	var stream := load(path) as AudioStream
+	var stream: AudioStream
+	if not selected_music_path.is_empty():
+		if FileAccess.file_exists(selected_music_path):
+			stream = _load_custom_music_stream(selected_music_path)
+		if stream == null:
+			push_warning("The selected song could not be opened: %s" % selected_music_path)
+			selected_music_path = ""
+			selected_music_name = ""
+			_save_settings()
 	if stream == null:
-		push_warning("Zone ambience is missing: %s" % path)
+		var track := selected_ambience
+		if track < 1 or track > 6:
+			track = current_zone
+		var path := "res://assets/audio/zone%d_ambient.wav" % track
+		stream = load(path) as AudioStream
+	if stream == null:
+		push_warning("The selected music and zone ambience could not be loaded.")
 		return
 	ambience_player.stop()
 	ambience_player.stream = stream
 	ambience_player.volume_db = linear_to_db(maxf(0.001, float(settings["music_volume"])))
 	ambience_player.play()
+
+
+func _load_custom_music_stream(path: String) -> AudioStream:
+	var stream: AudioStream
+	match path.get_extension().to_lower():
+		"mp3":
+			stream = AudioStreamMP3.load_from_file(path)
+		"ogg":
+			stream = AudioStreamOggVorbis.load_from_file(path)
+		"wav":
+			stream = AudioStreamWAV.load_from_file(path)
+		_:
+			return null
+	if stream is AudioStreamMP3:
+		(stream as AudioStreamMP3).loop = true
+	elif stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
+	elif stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+	return stream
 
 
 func _on_ambience_finished() -> void:
@@ -853,6 +928,21 @@ func _load_settings() -> void:
 	settings["mouse_sensitivity"] = clampf(float(config.get_value("controls", "mouse_sensitivity", 0.0025)), 0.001, 0.006)
 	settings["graphics"] = str(config.get_value("video", "graphics", "low"))
 	settings["show_fps"] = bool(config.get_value("video", "show_fps", false))
+	selected_music_path = str(config.get_value("audio", "selected_music_path", ""))
+	selected_music_name = str(config.get_value("audio", "selected_music_name", ""))
+	var saved_tracks: Variant = config.get_value("audio", "custom_music_tracks", [])
+	if saved_tracks is Array:
+		for track in saved_tracks:
+			if not track is Dictionary:
+				continue
+			var path := str(track.get("path", ""))
+			var name := str(track.get("name", ""))
+			if path.is_empty() or name.is_empty() or not FileAccess.file_exists(path):
+				continue
+			custom_music_tracks.append({"path": path, "name": name})
+	if not selected_music_path.is_empty() and not FileAccess.file_exists(selected_music_path):
+		selected_music_path = ""
+		selected_music_name = ""
 
 
 func _save_settings() -> void:
@@ -862,6 +952,9 @@ func _save_settings() -> void:
 	config.set_value("controls", "mouse_sensitivity", settings["mouse_sensitivity"])
 	config.set_value("video", "graphics", settings["graphics"])
 	config.set_value("video", "show_fps", settings["show_fps"])
+	config.set_value("audio", "custom_music_tracks", custom_music_tracks)
+	config.set_value("audio", "selected_music_path", selected_music_path)
+	config.set_value("audio", "selected_music_name", selected_music_name)
 	var result := config.save(settings_path)
 	if result != OK:
 		push_warning("Could not save settings: %s" % error_string(result))
@@ -1062,6 +1155,8 @@ func _create_settings_screen() -> void:
 	music.value = float(settings["music_volume"])
 	content.add_child(music)
 	music.value_changed.connect(_set_music_volume)
+	var music_library := _make_button(content, "CHOOSE MUSIC", Vector2(360.0, 42.0))
+	music_library.pressed.connect(func(): _set_screen("soundtrack"))
 	_make_label(content, "SOUND EFFECTS", 16)
 	var sfx := HSlider.new()
 	sfx.min_value = 0.0
@@ -1137,23 +1232,158 @@ func _open_settings() -> void:
 
 
 func _create_soundtrack_screen() -> void:
-	var screen := _new_screen("soundtrack", "SOUNDTRACK", "Select one of the six included zone ambience loops.")
+	var screen := _new_screen("soundtrack", "SOUNDTRACK", "Import audio from your phone, or choose zone ambience.")
 	screens["soundtrack"] = screen["root"]
 	var content: VBoxContainer = screen["content"]
-	for index in range(ZoneData.ZONES.size()):
-		var track := index + 1
-		var label := "%02d   %s" % [track, str(ZoneData.zone(track)["name"]).to_upper()]
-		var button := _make_button(content, label, Vector2(380.0, 44.0))
-		button.pressed.connect(_select_ambience.bind(track))
+	var add_song := _make_button(content, "ADD SONG FROM PHONE" if is_mobile else "ADD SONG", Vector2(380.0, 46.0))
+	add_song.pressed.connect(_open_music_picker)
+	soundtrack_status_label = _make_label(content, "", 14)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(380.0, 210.0)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(scroll)
+	soundtrack_tracks_container = VBoxContainer.new()
+	soundtrack_tracks_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	soundtrack_tracks_container.add_theme_constant_override("separation", 5)
+	scroll.add_child(soundtrack_tracks_container)
 	var back := _make_button(content, "BACK", Vector2(360.0, 42.0))
-	back.pressed.connect(func(): _set_screen("title"))
+	back.pressed.connect(func(): _set_screen(previous_screen))
+	_refresh_soundtrack_options()
 
 
 func _select_ambience(track: int) -> void:
+	selected_music_path = ""
+	selected_music_name = ""
 	selected_ambience = track
 	_save_progress()
-	if gameplay_active and not game_paused:
-		_start_ambience()
+	_save_settings()
+	_start_music(true)
+	_refresh_soundtrack_options()
+
+
+func _open_music_picker() -> void:
+	soundtrack_status_label.text = ""
+	if is_mobile:
+		if audio_picker == null:
+			_set_music_picker_status("The Android song picker is unavailable in this build.")
+			return
+		audio_picker.openAudioPicker()
+		_set_music_picker_status("Choose an MP3, OGG, or WAV from your phone.")
+		return
+	music_file_dialog.popup_centered_ratio(0.82)
+
+
+func _on_audio_picker_cancelled() -> void:
+	_set_music_picker_status("No song selected.")
+
+
+func _on_audio_picker_error(message: String) -> void:
+	_set_music_picker_status(message)
+	push_warning("Audio picker: %s" % message)
+
+
+func _on_android_audio_selected(path: String, display_name: String) -> void:
+	_register_custom_music(path, display_name)
+
+
+func _on_desktop_audio_selected(source_path: String) -> void:
+	var extension := source_path.get_extension().to_lower()
+	if extension not in ["mp3", "ogg", "wav"]:
+		_set_music_picker_status("Choose an MP3, OGG, or WAV audio file.")
+		return
+	var directory_path := ProjectSettings.globalize_path(music_library_path)
+	var make_directory_result := DirAccess.make_dir_recursive_absolute(directory_path)
+	if make_directory_result != OK:
+		_set_music_picker_status("Could not create the music library: %s" % error_string(make_directory_result))
+		return
+	var display_name := source_path.get_file()
+	var destination_path := music_library_path.path_join("%d-%s" % [Time.get_ticks_usec(), display_name.validate_filename()])
+	var source_absolute_path := ProjectSettings.globalize_path(source_path) if source_path.begins_with("res://") or source_path.begins_with("user://") else source_path
+	var destination_absolute_path := ProjectSettings.globalize_path(destination_path)
+	var copy_result := DirAccess.copy_absolute(source_absolute_path, destination_absolute_path)
+	if copy_result != OK:
+		_set_music_picker_status("Could not copy the song: %s" % error_string(copy_result))
+		return
+	_register_custom_music(destination_absolute_path, display_name)
+
+
+func _register_custom_music(path: String, display_name: String) -> void:
+	if not FileAccess.file_exists(path):
+		_set_music_picker_status("The selected audio file could not be found.")
+		return
+	if path.get_extension().to_lower() not in ["mp3", "ogg", "wav"]:
+		_set_music_picker_status("Choose an MP3, OGG, or WAV audio file.")
+		return
+	var stream := _load_custom_music_stream(path)
+	if stream == null:
+		_set_music_picker_status("This audio file could not be decoded. Choose an MP3, OGG, or WAV file.")
+		return
+	var track_name := display_name.get_basename().strip_edges()
+	if track_name.is_empty():
+		track_name = "Imported song"
+	var found := false
+	for index in range(custom_music_tracks.size()):
+		if str(custom_music_tracks[index]["path"]) == path:
+			custom_music_tracks[index]["name"] = track_name
+			found = true
+			break
+	if not found:
+		custom_music_tracks.append({"path": path, "name": track_name})
+	selected_music_path = path
+	selected_music_name = track_name
+	_save_settings()
+	_start_music(true)
+	_set_music_picker_status("Now playing: %s" % track_name)
+	_refresh_soundtrack_options()
+
+
+func _refresh_soundtrack_options() -> void:
+	if not is_instance_valid(soundtrack_tracks_container):
+		return
+	for child in soundtrack_tracks_container.get_children():
+		soundtrack_tracks_container.remove_child(child)
+		child.free()
+	var selected_label := "  (NOW PLAYING)" if selected_music_path.is_empty() else ""
+	var ambience_heading := _make_label(soundtrack_tracks_container, "ZONE AMBIENCE%s" % selected_label, 14)
+	ambience_heading.custom_minimum_size.y = 28.0
+	for index in range(ZoneData.ZONES.size()):
+		var track := index + 1
+		var label := "%02d   %s" % [track, str(ZoneData.zone(track)["name"]).to_upper()]
+		if selected_music_path.is_empty() and selected_ambience == track:
+			label += "   (NOW PLAYING)"
+		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
+		button.pressed.connect(_select_ambience.bind(track))
+	if not custom_music_tracks.is_empty():
+		var library_heading := _make_label(soundtrack_tracks_container, "YOUR SONGS", 14)
+		library_heading.custom_minimum_size.y = 28.0
+	for track in custom_music_tracks:
+		var path := str(track["path"])
+		var label := str(track["name"])
+		if selected_music_path == path:
+			label += "   (NOW PLAYING)"
+		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
+		button.pressed.connect(_select_custom_music.bind(path, str(track["name"])))
+
+
+func _select_custom_music(path: String, track_name: String) -> void:
+	if not FileAccess.file_exists(path):
+		_set_music_picker_status("This song is no longer available. Add it from your phone again.")
+		return
+	var stream := _load_custom_music_stream(path)
+	if stream == null:
+		_set_music_picker_status("This audio file could not be decoded.")
+		return
+	selected_music_path = path
+	selected_music_name = track_name
+	_save_settings()
+	_start_music(true)
+	_set_music_picker_status("Now playing: %s" % track_name)
+	_refresh_soundtrack_options()
+
+
+func _set_music_picker_status(message: String) -> void:
+	if is_instance_valid(soundtrack_status_label):
+		soundtrack_status_label.text = message
 
 
 func _create_controls_screen() -> void:

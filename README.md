@@ -15,13 +15,15 @@ music selection, settings, and saved progress.
   on this machine; keyboard/mouse interaction has not been physically tested.
   The package is available at
   `godot_project/build/windows/DreamcoreParkour-Windows.zip`.
-- **Android:** a debug-signed preview APK is available from the release below.
-  The Godot project has landscape/touch support; the APK has been signature-
-  checked but not installed or tested on a phone and is not signed with a
-  production release key. Download it from the
-  [Android Preview release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview).
-- **GitHub release:** [Android Preview 0.1.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview)
-  (pre-release; device testing pending).
+- **Android:** the debug-signed preview APK includes the corrected zone texture
+  mapping and an in-game option to import MP3, OGG, or WAV files from the phone.
+  The APK passed export, signature, and manifest checks, but has not been
+  installed or tested on a physical phone and is not signed with a production
+  release key. The updated APK is ready, but publishing it requires GitHub
+  authorization. The current downloadable build is the
+  [Android Preview 0.1.0 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview).
+- **GitHub release:** [Android Preview 0.1.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview);
+  the updated APK is pending publication.
 
 ## Run on desktop
 
@@ -86,6 +88,9 @@ python -m py_compile main.py game_zones.py
 
 The Android APK is a debug-signed preview (`arm64-v8a` and `armeabi-v7a`, minimum
 Android 7.0/API 24). It has passed signature and manifest checks but has not been
-installed or tested on a phone; joystick, camera, fullscreen, and safe-area
-behavior remain unverified on physical hardware. It is not signed with a
-production release key and should not be submitted to an app store.
+installed or tested on a phone; joystick, camera, fullscreen, safe-area, and
+phone audio-picker behavior remain unverified on physical hardware. Songs
+imported from the phone are stored in the app's private music library and are
+removed when the app is uninstalled. No personal music is bundled in the APK.
+It is not signed with a production release key and should not be submitted to an
+app store.
