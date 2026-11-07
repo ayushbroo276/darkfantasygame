@@ -62,12 +62,16 @@ func _run() -> void:
 	for track in built_in_tracks:
 		var track_path := str(track["path"])
 		_expect(ResourceLoader.exists(track_path), "%s soundtrack asset is present" % track["name"])
+		_expect(bool(game.call("_music_path_exists", track_path)), "%s soundtrack resource is available to the player" % track["name"])
 		var track_listed := false
 		for child in soundtrack_container.get_children():
 			if child is Button and (child as Button).text.begins_with(str(track["name"])):
 				track_listed = true
 				break
 		_expect(track_listed, "%s appears in the soundtrack menu" % track["name"])
+		game.call("_select_music_track", track_path, str(track["name"]))
+		_expect(game.get("selected_music_path") == track_path, "%s can be selected" % track["name"])
+	_expect(not bool(game.call("_music_path_exists", "res://missing_track.mp3")), "missing bundled music is reported unavailable")
 	game.call("_set_screen", "controls")
 	_expect(screens["controls"].visible, "controls menu opens")
 

@@ -18,11 +18,11 @@ touchscreen, or phone.
 The portable Windows package is generated under `build/windows/`. An earlier
 debug-signed Android APK was installed and launched on a realme RMX3762 running
 Android 15; landscape display, gameplay textures, and touch controls were
-visually confirmed. Dark Fantasy 0.3.0 has now been exported with the
-bundled soundtracks; the smoke test and APK signature, manifest, and packaged
-track checks pass. The new build still needs phone testing. This is a preview
-build, not a Play Store/release-key-signed APK. Publishing the updated APK is
-complete: [Dark Fantasy 0.3.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.3.0-android).
+visually confirmed. Testing 0.3.0 exposed that Android rejected bundled song
+paths. Version 0.4.0 fixes resource lookup and passes the Godot smoke test,
+including selection of the bundled tracks; the new APK still needs phone
+verification. This is a preview build, not a Play Store/release-key-signed APK.
+Publishing the fixed APK is complete: [Dark Fantasy 0.4.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.0-android).
 
 The six licensed MP3 tracks are bundled at `assets/audio/music/` and listed on
 the **Soundtrack** screen. Choose **Comfort**, **Numbers**, **Resonance**,
@@ -61,8 +61,8 @@ version from the repository root:
 
 Distribute the generated executable and its adjacent `.pck` file together.
 
-To create the Android preview APK named `Dark-Fantasy.apk`, install the matching Android export templates
-and Gradle build template. Configure JDK 17 and Android SDK 36 (including
+To create the Android preview APK named `Dark-Fantasy.apk`, install the matching
+Android export templates and Gradle build template. Configure JDK 17 and Android SDK 36 (including
 Build-Tools 36.1.0) in Godot Editor Settings, then run from the repository root:
 
 ```powershell
@@ -71,10 +71,10 @@ Build-Tools 36.1.0) in Godot Editor Settings, then run from the repository root:
 
 Install the APK on an ARM Android device by opening it from the device's file
 manager and allowing installation from that source if Android asks. Version
-0.3.0 contains `arm64-v8a` and `armeabi-v7a` builds and requests Android 7.0
+0.4.0 contains `arm64-v8a` and `armeabi-v7a` builds and requests Android 7.0
 (API 24) or later. Installation and launch of the earlier preview were
-confirmed on an RMX3762 running Android 15. The updated soundtrack build,
-document picker, and other devices/resolutions still need testing. Do not
+confirmed on an RMX3762 running Android 15. The fixed soundtrack build, document
+picker, and other devices/resolutions still need testing. Do not
 redistribute it as a production-signed release.
 
 The six zone courses are streamed around the player to reduce live object and

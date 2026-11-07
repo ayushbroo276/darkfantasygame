@@ -810,7 +810,7 @@ func _start_music(preview := false) -> void:
 		return
 	var stream: AudioStream
 	if not selected_music_path.is_empty():
-		if FileAccess.file_exists(selected_music_path):
+		if _music_path_exists(selected_music_path):
 			stream = _load_music_stream(selected_music_path)
 		if stream == null:
 			push_warning("The selected song could not be opened: %s" % selected_music_path)
@@ -853,6 +853,12 @@ func _load_music_stream(path: String) -> AudioStream:
 	elif stream is AudioStreamWAV:
 		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
 	return stream
+
+
+func _music_path_exists(path: String) -> bool:
+	if path.begins_with("res://"):
+		return ResourceLoader.exists(path)
+	return FileAccess.file_exists(path)
 
 
 func _on_ambience_finished() -> void:
@@ -951,7 +957,7 @@ func _load_settings() -> void:
 			if path.is_empty() or name.is_empty() or not FileAccess.file_exists(path):
 				continue
 			custom_music_tracks.append({"path": path, "name": name})
-	if not selected_music_path.is_empty() and not FileAccess.file_exists(selected_music_path):
+	if not selected_music_path.is_empty() and not _music_path_exists(selected_music_path):
 		selected_music_path = ""
 		selected_music_name = ""
 
@@ -1386,7 +1392,7 @@ func _refresh_soundtrack_options() -> void:
 
 
 func _select_music_track(path: String, track_name: String) -> void:
-	if not FileAccess.file_exists(path):
+	if not _music_path_exists(path):
 		_set_music_picker_status("This song is no longer available.")
 		return
 	var stream := _load_music_stream(path)
