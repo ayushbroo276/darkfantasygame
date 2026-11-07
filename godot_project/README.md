@@ -1,4 +1,4 @@
-# Dreamcore Parkour (Godot)
+# Dark Fantasy (Godot)
 
 This is a Godot/GDScript port of the six-zone Ursina game. The original Python
 project remains in the repository root and is not modified by the port.
@@ -9,7 +9,8 @@ The project has passed Godot 4.7.2 headless startup and the automated gameplay
 smoke test in `tests/smoke_test.gd`. The test exercises movement, jumping,
 sprinting, wall-running, checkpoint landing/saving, moving and timed platforms,
 pause/resume, completion/unlocks, loading all six zones, texture mapping, and
-custom-audio import/playback. A portable Windows export was built and launched
+custom-audio import/playback. The app label and title screen both display
+**Dark Fantasy**. A portable Windows export was built and launched
 in both headless and desktop modes on Intel integrated graphics. Input was
 simulated by the smoke test, not verified with a physical keyboard, mouse,
 touchscreen, or phone.
@@ -17,11 +18,11 @@ touchscreen, or phone.
 The portable Windows package is generated under `build/windows/`. An earlier
 debug-signed Android APK was installed and launched on a realme RMX3762 running
 Android 15; landscape display, gameplay textures, and touch controls were
-visually confirmed. Android Preview 0.2.0 has now been exported with the
+visually confirmed. Dark Fantasy 0.3.0 has now been exported with the
 bundled soundtracks; the smoke test and APK signature, manifest, and packaged
 track checks pass. The new build still needs phone testing. This is a preview
 build, not a Play Store/release-key-signed APK. Publishing the updated APK is
-complete: [Android Preview 0.2.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.2.0-android-preview).
+complete: [Dark Fantasy 0.3.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.3.0-android).
 
 The six licensed MP3 tracks are bundled at `assets/audio/music/` and listed on
 the **Soundtrack** screen. Choose **Comfort**, **Numbers**, **Resonance**,
@@ -55,22 +56,22 @@ After installing the matching Godot export templates, build the portable Windows
 version from the repository root:
 
 ```powershell
-& 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --export-release 'Windows Desktop' '.\godot_project\build\windows\Dreamcore Parkour.exe'
+& 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --export-release 'Windows Desktop' '.\godot_project\build\windows\Dark Fantasy.exe'
 ```
 
 Distribute the generated executable and its adjacent `.pck` file together.
 
-To create the Android preview APK, install the matching Android export templates
+To create the Android preview APK named `Dark-Fantasy.apk`, install the matching Android export templates
 and Gradle build template. Configure JDK 17 and Android SDK 36 (including
 Build-Tools 36.1.0) in Godot Editor Settings, then run from the repository root:
 
 ```powershell
-& 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --export-debug Android '.\godot_project\build\android\dreamcore-parkour-debug.apk'
+& 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --export-debug Android '.\godot_project\build\android\Dark-Fantasy.apk'
 ```
 
 Install the APK on an ARM Android device by opening it from the device's file
 manager and allowing installation from that source if Android asks. Version
-0.2.0 contains `arm64-v8a` and `armeabi-v7a` builds and requests Android 7.0
+0.3.0 contains `arm64-v8a` and `armeabi-v7a` builds and requests Android 7.0
 (API 24) or later. Installation and launch of the earlier preview were
 confirmed on an RMX3762 running Android 15. The updated soundtrack build,
 document picker, and other devices/resolutions still need testing. Do not

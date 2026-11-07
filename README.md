@@ -1,32 +1,34 @@
-# Dreamcore Horror Parkour
+# Dark Fantasy
 
-A six-zone 3D parkour game made with Python and Ursina. The existing desktop game
-includes chapter progression, checkpoints, moving and timed obstacles, secrets,
-music selection, settings, and saved progress.
+The six-zone 3D parkour game has an original Python/Ursina desktop version and a
+Godot port for Windows and Android. Both include chapter progression,
+checkpoints, moving and timed obstacles, secrets, music selection, settings,
+and saved progress.
 
 ## Status
 
 - **Ursina:** the original Python project remains at the repository root and is
   unchanged. It continues to target desktop Python.
-- **Godot:** a separate GDScript port is in [`godot_project`](./godot_project/).
+- **Godot:** a separate GDScript port named **Dark Fantasy** is in [`godot_project`](./godot_project/).
   Its Godot 4.7.2 headless startup and gameplay smoke tests cover all six zones,
   movement, jumping, sprinting, wall-running, checkpoints, moving/timed platforms,
   and the principal menus. A portable Windows export has been built and launched
   on this machine; keyboard/mouse interaction has not been physically tested.
   The package is available at
-  `godot_project/build/windows/DreamcoreParkour-Windows.zip`.
-- **Android:** the debug-signed preview APK includes the corrected zone texture
+  `godot_project/build/windows/Dark Fantasy.exe` with its adjacent `.pck` file.
+- **Android:** the preview APK named `Dark-Fantasy.apk` includes the corrected zone texture
   mapping and all six licensed soundtrack tracks. It also lets players import
-  additional MP3, OGG, or WAV files from the phone. Version 0.2.0 has been
+  additional MP3, OGG, or WAV files from the phone. Version 0.3.0 has been
   exported and passed the Godot smoke test, APK signature/manifest checks, and
-  bundled-track packaging checks. The new APK still needs phone testing.
+  bundled-track packaging checks. The app and title screen are named **Dark
+  Fantasy**. The new APK still needs phone testing.
   The earlier preview was installed and launched on a realme RMX3762 (Android
   15); the landscape screen and gameplay controls were visually confirmed. The
   new soundtrack build has not yet been tested on a phone and is not signed with
   a production release key.
   The current downloadable build is the
-  [Android Preview 0.2.0 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.2.0-android-preview).
-- **GitHub release:** [Android Preview 0.2.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.2.0-android-preview).
+  [Dark Fantasy 0.3.0 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.3.0-android).
+- **GitHub release:** [Dark Fantasy 0.3.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.3.0-android).
 
 ## Run on desktop
 
@@ -90,8 +92,8 @@ python -m py_compile main.py game_zones.py
 ## Android preview limitations
 
 The Android APK is a debug-signed preview (`arm64-v8a` and `armeabi-v7a`, minimum
-Android 7.0/API 24). Version 0.2.0 passed the Godot smoke test and APK
-signature/manifest/package checks. The earlier preview was installed and
+Android 7.0/API 24). Version 0.3.0 passed the Godot smoke test and APK
+signature/manifest/package checks, including all six bundled songs. The earlier preview was installed and
 launched on a realme RMX3762 running Android 15, with landscape gameplay and
 touch controls visually confirmed; the updated soundtrack build and Android
 document picker still need device testing. The APK is not signed with a

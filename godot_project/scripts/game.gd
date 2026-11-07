@@ -1076,7 +1076,7 @@ func _touch_controls_visible(visible: bool) -> void:
 
 
 func _create_title_screen() -> void:
-	var screen := _new_screen("title", "DREAMCORE PARKOUR", "SIX LIMINAL ZONES  ·  ONE LONG WAY HOME")
+	var screen := _new_screen("title", "DARK FANTASY", "SIX LIMINAL ZONES  ·  ONE LONG WAY HOME")
 	screens["title"] = screen["root"]
 	var content: VBoxContainer = screen["content"]
 	var play := _make_button(content, "PLAY", Vector2(360.0, 46.0))

@@ -19,6 +19,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await physics_frame
+	_expect(ProjectSettings.get_setting("application/config/name") == "Dark Fantasy", "application name is Dark Fantasy")
 	game.set("progress_path", "user://smoke_test_progress.json")
 	game.set("settings_path", "user://smoke_test_settings.cfg")
 	game.set("unlocked_zones", [1])
@@ -28,6 +29,13 @@ func _run() -> void:
 	(game.get("collected_secrets") as Array).clear()
 
 	var screens: Dictionary = game.get("screens")
+	var title_screen := screens["title"] as Control
+	var title_matches := false
+	for node in title_screen.find_children("*", "Label", true, false):
+		if (node as Label).text == "DARK FANTASY":
+			title_matches = true
+			break
+	_expect(title_matches, "title screen is named Dark Fantasy")
 	for screen_name in ["title", "chapters", "new_game", "settings", "soundtrack", "controls", "pause", "complete"]:
 		_expect(screens.has(screen_name), "%s screen is present" % screen_name)
 	_expect(ProjectSettings.get_setting("rendering/textures/vram_compression/import_etc2_astc"), "Android ETC2/ASTC texture import is enabled")
