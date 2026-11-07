@@ -6,6 +6,14 @@ const PlayerScript = preload("res://scripts/player_controller.gd")
 const SAVE_PATH := "user://progress.json"
 const SETTINGS_PATH := "user://settings.cfg"
 const MUSIC_LIBRARY_PATH := "user://music"
+const BUILT_IN_SOUNDTRACKS := [
+	{"path": "res://assets/audio/music/comfort.mp3", "name": "Comfort"},
+	{"path": "res://assets/audio/music/numbers.mp3", "name": "Numbers"},
+	{"path": "res://assets/audio/music/resonance.mp3", "name": "Resonance"},
+	{"path": "res://assets/audio/music/school.mp3", "name": "School"},
+	{"path": "res://assets/audio/music/weeks.mp3", "name": "Weeks"},
+	{"path": "res://assets/audio/music/undertale.mp3", "name": "Undertale"},
+]
 const STREAM_BACK := 3
 const STREAM_FORWARD := 22
 const SECTION_NAMES := ["INTRODUCTION", "FLOATING STAIRS", "MOVING CROSSING", "WALL-RUN GALLERY", "TIMED HALL", "HIDDEN PASSAGE", "FINAL ASCENT"]
@@ -803,7 +811,7 @@ func _start_music(preview := false) -> void:
 	var stream: AudioStream
 	if not selected_music_path.is_empty():
 		if FileAccess.file_exists(selected_music_path):
-			stream = _load_custom_music_stream(selected_music_path)
+			stream = _load_music_stream(selected_music_path)
 		if stream == null:
 			push_warning("The selected song could not be opened: %s" % selected_music_path)
 			selected_music_path = ""
@@ -824,17 +832,20 @@ func _start_music(preview := false) -> void:
 	ambience_player.play()
 
 
-func _load_custom_music_stream(path: String) -> AudioStream:
+func _load_music_stream(path: String) -> AudioStream:
 	var stream: AudioStream
-	match path.get_extension().to_lower():
-		"mp3":
-			stream = AudioStreamMP3.load_from_file(path)
-		"ogg":
-			stream = AudioStreamOggVorbis.load_from_file(path)
-		"wav":
-			stream = AudioStreamWAV.load_from_file(path)
-		_:
-			return null
+	if path.begins_with("res://"):
+		stream = load(path) as AudioStream
+	else:
+		match path.get_extension().to_lower():
+			"mp3":
+				stream = AudioStreamMP3.load_from_file(path)
+			"ogg":
+				stream = AudioStreamOggVorbis.load_from_file(path)
+			"wav":
+				stream = AudioStreamWAV.load_from_file(path)
+			_:
+				return null
 	if stream is AudioStreamMP3:
 		(stream as AudioStreamMP3).loop = true
 	elif stream is AudioStreamOggVorbis:
@@ -1232,7 +1243,7 @@ func _open_settings() -> void:
 
 
 func _create_soundtrack_screen() -> void:
-	var screen := _new_screen("soundtrack", "SOUNDTRACK", "Import audio from your phone, or choose zone ambience.")
+	var screen := _new_screen("soundtrack", "SOUNDTRACK", "Choose an included song, import audio, or choose zone ambience.")
 	screens["soundtrack"] = screen["root"]
 	var content: VBoxContainer = screen["content"]
 	var add_song := _make_button(content, "ADD SONG FROM PHONE" if is_mobile else "ADD SONG", Vector2(380.0, 46.0))
@@ -1314,7 +1325,7 @@ func _register_custom_music(path: String, display_name: String) -> void:
 	if path.get_extension().to_lower() not in ["mp3", "ogg", "wav"]:
 		_set_music_picker_status("Choose an MP3, OGG, or WAV audio file.")
 		return
-	var stream := _load_custom_music_stream(path)
+	var stream := _load_music_stream(path)
 	if stream == null:
 		_set_music_picker_status("This audio file could not be decoded. Choose an MP3, OGG, or WAV file.")
 		return
@@ -1353,6 +1364,15 @@ func _refresh_soundtrack_options() -> void:
 			label += "   (NOW PLAYING)"
 		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
 		button.pressed.connect(_select_ambience.bind(track))
+	var included_heading := _make_label(soundtrack_tracks_container, "INCLUDED SOUNDTRACKS", 14)
+	included_heading.custom_minimum_size.y = 28.0
+	for track in BUILT_IN_SOUNDTRACKS:
+		var path := str(track["path"])
+		var label := str(track["name"])
+		if selected_music_path == path:
+			label += "   (NOW PLAYING)"
+		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
+		button.pressed.connect(_select_music_track.bind(path, str(track["name"])))
 	if not custom_music_tracks.is_empty():
 		var library_heading := _make_label(soundtrack_tracks_container, "YOUR SONGS", 14)
 		library_heading.custom_minimum_size.y = 28.0
@@ -1362,16 +1382,16 @@ func _refresh_soundtrack_options() -> void:
 		if selected_music_path == path:
 			label += "   (NOW PLAYING)"
 		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
-		button.pressed.connect(_select_custom_music.bind(path, str(track["name"])))
+		button.pressed.connect(_select_music_track.bind(path, str(track["name"])))
 
 
-func _select_custom_music(path: String, track_name: String) -> void:
+func _select_music_track(path: String, track_name: String) -> void:
 	if not FileAccess.file_exists(path):
-		_set_music_picker_status("This song is no longer available. Add it from your phone again.")
+		_set_music_picker_status("This song is no longer available.")
 		return
-	var stream := _load_custom_music_stream(path)
+	var stream := _load_music_stream(path)
 	if stream == null:
-		_set_music_picker_status("This audio file could not be decoded.")
+		_set_music_picker_status("This soundtrack could not be decoded.")
 		return
 	selected_music_path = path
 	selected_music_name = track_name

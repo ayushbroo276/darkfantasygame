@@ -26,10 +26,10 @@ godot_project/android/
 *.apk
 *.aab
 
-# Licensed soundtrack files are supplied locally by the game owner.
-resonance.mp3
-weeks.mp3
-comfort.mp3
-school.mp3
-numbers.mp3
-undertale.mp3
+# Ursina soundtrack copies remain local; licensed Godot copies are bundled below.
+/resonance.mp3
+/weeks.mp3
+/comfort.mp3
+/school.mp3
+/numbers.mp3
+/undertale.mp3

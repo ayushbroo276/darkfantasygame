@@ -16,14 +16,18 @@ music selection, settings, and saved progress.
   The package is available at
   `godot_project/build/windows/DreamcoreParkour-Windows.zip`.
 - **Android:** the debug-signed preview APK includes the corrected zone texture
-  mapping and an in-game option to import MP3, OGG, or WAV files from the phone.
-  The APK passed export, signature, and manifest checks, but has not been
-  installed or tested on a physical phone and is not signed with a production
-  release key. The updated APK is ready, but publishing it requires GitHub
-  authorization. The current downloadable build is the
+  mapping and all six licensed soundtrack tracks. It also lets players import
+  additional MP3, OGG, or WAV files from the phone. Version 0.2.0 has been
+  exported and passed the Godot smoke test, APK signature/manifest checks, and
+  bundled-track packaging checks. The new APK still needs phone testing.
+  The earlier preview was installed and launched on a realme RMX3762 (Android
+  15); the landscape screen and gameplay controls were visually confirmed. The
+  new soundtrack build has not yet been tested on a phone and is not signed with
+  a production release key. Publishing the update requires GitHub authorization.
+  The current downloadable build is the
   [Android Preview 0.1.0 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview).
 - **GitHub release:** [Android Preview 0.1.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview);
-  the updated APK is pending publication.
+  Android Preview 0.2.0 is pending publication.
 
 ## Run on desktop
 
@@ -67,11 +71,11 @@ modify or reuse the Ursina `save.json`.
 - `zone1_the_beginning/` through `zone6_the_tower/` — chapter texture assets.
 - `zone*_ambient.wav` and `game_sfx.wav` — generated ambience and gameplay cue.
 
-Keep the six zone folders and WAV files beside `main.py`. The six soundtrack MP3s
-are intentionally not tracked: only add and distribute music you have permission
-to use. Place locally licensed tracks beside `main.py` using the expected filenames
-(`resonance.mp3`, `weeks.mp3`, `comfort.mp3`, `school.mp3`, `numbers.mp3`, and
-`undertale.mp3`).
+Keep the six zone folders and WAV files beside `main.py`. The Ursina game uses
+locally supplied soundtrack MP3s beside `main.py`; those root copies remain
+ignored by Git. Licensed soundtrack copies used by the Godot game are stored in
+`godot_project/assets/audio/music/` and are bundled with that version. On Android,
+players can also import other MP3, OGG, or WAV files from the phone's system picker.
 
 Saved progress and settings are local (`save.json` and `settings.json`) and are
 ignored by Git.
@@ -87,10 +91,11 @@ python -m py_compile main.py game_zones.py
 ## Android preview limitations
 
 The Android APK is a debug-signed preview (`arm64-v8a` and `armeabi-v7a`, minimum
-Android 7.0/API 24). It has passed signature and manifest checks but has not been
-installed or tested on a phone; joystick, camera, fullscreen, safe-area, and
-phone audio-picker behavior remain unverified on physical hardware. Songs
-imported from the phone are stored in the app's private music library and are
-removed when the app is uninstalled. No personal music is bundled in the APK.
-It is not signed with a production release key and should not be submitted to an
-app store.
+Android 7.0/API 24). Version 0.2.0 passed the Godot smoke test and APK
+signature/manifest/package checks. The earlier preview was installed and
+launched on a realme RMX3762 running Android 15, with landscape gameplay and
+touch controls visually confirmed; the updated soundtrack build and Android
+document picker still need device testing. The APK is not signed with a
+production release key and should not be submitted to an app store. Six
+licensed soundtrack MP3s are bundled; any additional tracks imported from the
+phone stay in the app's private music library and are removed on uninstall.

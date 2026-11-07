@@ -48,6 +48,18 @@ func _run() -> void:
 	_expect(screens["settings"].visible, "settings menu opens")
 	game.call("_set_screen", "soundtrack")
 	_expect(screens["soundtrack"].visible, "soundtrack menu opens")
+	var built_in_tracks: Array = game.get_script().get_script_constant_map()["BUILT_IN_SOUNDTRACKS"]
+	_expect(built_in_tracks.size() == 6, "six built-in soundtrack choices are configured")
+	var soundtrack_container := game.get("soundtrack_tracks_container") as VBoxContainer
+	for track in built_in_tracks:
+		var track_path := str(track["path"])
+		_expect(ResourceLoader.exists(track_path), "%s soundtrack asset is present" % track["name"])
+		var track_listed := false
+		for child in soundtrack_container.get_children():
+			if child is Button and (child as Button).text.begins_with(str(track["name"])):
+				track_listed = true
+				break
+		_expect(track_listed, "%s appears in the soundtrack menu" % track["name"])
 	game.call("_set_screen", "controls")
 	_expect(screens["controls"].visible, "controls menu opens")
 
@@ -194,6 +206,14 @@ func _run() -> void:
 	await process_frame
 	_expect(game.get("gameplay_active") and game.get("current_zone") == 2, "completion menu advances to the next chapter")
 
+	var bundled_track: Dictionary = built_in_tracks[2]
+	game.call("_select_music_track", str(bundled_track["path"]), str(bundled_track["name"]))
+	var ambience_player := game.get("ambience_player") as AudioStreamPlayer
+	_expect(game.get("selected_music_path") == bundled_track["path"], "built-in soundtrack selection is persisted")
+	_expect(ambience_player.stream is AudioStreamMP3, "built-in MP3 is loaded into the music player")
+	_expect((ambience_player.stream as AudioStreamMP3).loop, "built-in MP3 is set to loop")
+	_expect(ambience_player.playing, "built-in MP3 plays during gameplay")
+
 	game.set("music_library_path", "user://smoke_test_music")
 	var sample_song_path := ProjectSettings.globalize_path("res://assets/audio/game_sfx.wav")
 	game.call("_on_desktop_audio_selected", sample_song_path)
@@ -201,7 +221,6 @@ func _run() -> void:
 	_expect(custom_tracks.size() == 1, "custom audio is added to the soundtrack library")
 	_expect(game.get("selected_music_path") == custom_tracks[0]["path"], "imported audio is selected and persisted")
 	_expect(FileAccess.file_exists(str(custom_tracks[0]["path"])), "imported audio is copied into the app music library")
-	var ambience_player := game.get("ambience_player") as AudioStreamPlayer
 	_expect(ambience_player.stream is AudioStreamWAV, "imported WAV is loaded into the music player")
 	_expect(ambience_player.playing, "selected WAV audio plays as a loop (playing=%s)" % ambience_player.playing)
 	game.call("_select_ambience", 3)
