@@ -21,9 +21,7 @@ visually confirmed. Android Preview 0.2.0 has now been exported with the
 bundled soundtracks; the smoke test and APK signature, manifest, and packaged
 track checks pass. The new build still needs phone testing. This is a preview
 build, not a Play Store/release-key-signed APK. Publishing the updated APK is
-pending GitHub authorization; the existing
-[Android Preview GitHub release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview)
-contains the earlier build.
+complete: [Android Preview 0.2.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.2.0-android-preview).
 
 The six licensed MP3 tracks are bundled at `assets/audio/music/` and listed on
 the **Soundtrack** screen. Choose **Comfort**, **Numbers**, **Resonance**,

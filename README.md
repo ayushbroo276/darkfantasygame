@@ -23,11 +23,10 @@ music selection, settings, and saved progress.
   The earlier preview was installed and launched on a realme RMX3762 (Android
   15); the landscape screen and gameplay controls were visually confirmed. The
   new soundtrack build has not yet been tested on a phone and is not signed with
-  a production release key. Publishing the update requires GitHub authorization.
+  a production release key.
   The current downloadable build is the
-  [Android Preview 0.1.0 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview).
-- **GitHub release:** [Android Preview 0.1.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.1.0-android-preview);
-  Android Preview 0.2.0 is pending publication.
+  [Android Preview 0.2.0 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.2.0-android-preview).
+- **GitHub release:** [Android Preview 0.2.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.2.0-android-preview).
 
 ## Run on desktop
 
