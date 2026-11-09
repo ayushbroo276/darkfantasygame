@@ -1,5 +1,6 @@
 # Python runtime and test artifacts
 __pycache__/
+*.egg-info/
 *.py[cod]
 .pytest_cache/
 .coverage
@@ -29,6 +30,7 @@ godot_project/android/
 # Ursina soundtrack copies remain local; licensed Godot copies are bundled below.
 /resonance.mp3
 /weeks.mp3
+/assets/audio/music/*.mp3
 /comfort.mp3
 /school.mp3
 /numbers.mp3

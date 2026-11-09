@@ -1,74 +1,104 @@
 # Dark Fantasy
 
+![Python checks](https://github.com/ayushbroo276/darkfantasygame/actions/workflows/python-checks.yml/badge.svg)
+
+<p align="center">
+  <img src="godot_project/assets/android_icons/launcher_icon_512.png" alt="Dark Fantasy launcher artwork" width="180">
+</p>
+
 **A six-zone dreamcore parkour game through surreal, liminal worlds.**
 
-The repository includes the original Python/Ursina desktop game and a separate
-Godot/GDScript port for Windows and Android. The original Ursina project is kept
-alongside the port.
+Explore abandoned halls, poolrooms, overgrown passages, and a seemingly
+endless tower. This repository contains the original Python/Ursina desktop
+game and its separate Godot port for Windows and Android.
 
-> **Get the latest game:** [Download the newest release](https://github.com/ayushbroo276/darkfantasygame/releases/latest)
-> — the release page is the recommended place to get the current Android APK
-> and any available desktop build.
+> **[Download the latest release](https://github.com/ayushbroo276/darkfantasygame/releases/latest)**
+> — includes the current Android APK and Windows game package.
 
-## Explore
+## Features
 
-- Six atmospheric zones, checkpoints, moving platforms, and timed challenges.
+- Six atmospheric zones with checkpoints, moving platforms, and timed challenges.
 - First-person movement, jumping, sprinting, and wall-running.
-- Chapter progression, saved progress, completion screens, and pause/settings menus.
-- Six bundled soundtrack selections, with support for importing your own audio.
-- Windows keyboard/mouse controls and Android touch controls.
+- Chapter progression, local saves, settings, and completion screens.
+- Windows keyboard/mouse controls and Android touchscreen controls.
+- Six soundtrack selections in the Godot version, with optional custom audio import.
 
-## Play the Godot version
+## Choose a version
 
-Open [`godot_project`](./godot_project/) in **Godot 4.7.2** and run the main
-scene. On Windows, use **WASD** to move, the mouse to look, **Space** to jump,
-**Left Shift** to sprint, **E** to wall-run, and **Esc** to pause. Android uses a
-landscape joystick, touch camera, and on-screen action buttons.
+### Godot — Windows and Android
 
-For a packaged game, use the [latest release](https://github.com/ayushbroo276/darkfantasygame/releases/latest).
-The Android preview APK supports ARM64 and ARMv7 devices and requires Android 7.0
-(API 24) or later. It is debug-signed, not signed with a Play Store production
-key. See the [Godot guide](./godot_project/README.md) for build instructions,
-music details, and current testing limitations.
+Open [`godot_project/`](./godot_project/) in Godot 4.7.2 and run the main scene.
+For a prebuilt game, visit the [latest release](https://github.com/ayushbroo276/darkfantasygame/releases/latest).
 
-## Play the original Ursina version
+The Android APK supports ARM64 and ARMv7 devices running Android 7.0 (API 24)
+or later. It is debug-signed, not signed with a production Play Store key.
+See the [Godot guide](./godot_project/README.md) for export details and known
+limitations.
 
-Use Python 3.10 or later:
+### Original Ursina — Windows
+
+Python 3.10 or later is required. From the repository root:
 
 ```powershell
 python -m pip install -r requirements.txt
 python main.py
 ```
 
-Gameplay starts fullscreen; press **F11** to toggle fullscreen.
+Gameplay starts fullscreen. Press **F11** to toggle fullscreen.
 
-## Project map
+| Action | Windows control |
+| --- | --- |
+| Move | WASD |
+| Look | Mouse |
+| Jump | Space |
+| Sprint | Left Shift |
+| Wall-run | E |
+| Pause | Esc |
 
-- `main.py`, `game_zones.py`, `zone*/` — original Python/Ursina game.
-- `godot_project/` — Godot scenes, scripts, assets, tests, and export settings.
-- `godot_project/assets/android_icons/` — launcher and adaptive icon artwork.
+The legacy `main.py` and `game_zones.py` launch/import shims remain at the
+repository root. The organized Ursina implementation is in `src/dark_fantasy/`.
 
-The Godot port stores saves in its own per-user `user://` directory. Its
-licensed soundtrack files are bundled under `godot_project/assets/audio/music/`;
-only redistribute audio or other assets when you have permission to do so.
+## Project layout
 
-## Verify
+```text
+assets/
+  audio/
+    ambient/          # Zone ambience and gameplay sound effects
+    music/            # Optional local Ursina soundtrack files (not committed)
+  zone1_.../          # Chapter textures
+  ...
+src/dark_fantasy/     # Ursina package
+tests/                # Python asset-integrity tests
+tools/                # Source texture generators
+godot_project/        # Godot project, Android plugin, and export settings
+.github/workflows/    # Automated Python checks
+```
 
-Run the Godot smoke test from the repository root with Godot 4.7.2:
+Ursina soundtracks are not included in the repository. To use tracks that you
+have permission to use, place their MP3 files in `assets/audio/music/` with
+these filenames: `resonance.mp3`, `weeks.mp3`, `comfort.mp3`, `school.mp3`,
+`numbers.mp3`, and `undertale.mp3`. This local folder is ignored by Git.
+
+The source image generators require Pillow. Install that optional dependency
+with `python -m pip install -e ".[asset-tools]"`, then run scripts from `tools/`.
+
+## Tests
+
+Run the Python syntax and asset checks:
+
+```powershell
+python -m compileall -q main.py game_zones.py src tools tests
+python -m unittest discover -s tests -v
+```
+
+Run the Godot gameplay smoke test with Godot 4.7.2:
 
 ```powershell
 & 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --script res://tests/smoke_test.gd --audio-driver Dummy
 ```
 
-Check the original Python sources:
+## Asset permissions
 
-```powershell
-python -m py_compile main.py game_zones.py
-```
-
-## Limitations
-
-The Android APK is a debug-signed preview. Device-specific performance,
-touchscreen behavior, and imported-song support may vary; the latest release
-notes describe the tested hardware and known issues. Windows builds are portable
-and require the executable and its adjacent `.pck` file together.
+Only redistribute artwork, sound, or music when you have permission to do so.
+Godot's included soundtrack and launcher artwork are documented in
+[`godot_project/README.md`](./godot_project/README.md).

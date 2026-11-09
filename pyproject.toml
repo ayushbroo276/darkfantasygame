@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dark-fantasy-game"
+version = "0.4.3"
+description = "A six-zone dreamcore parkour game built with Ursina."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ursina==8.3.0",
+]
+
+[project.optional-dependencies]
+asset-tools = [
+    "Pillow>=10",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.data-files]
+"assets" = ["assets/*.png"]
+"assets/audio/sfx" = ["assets/audio/sfx/*.wav"]
+"assets/audio/ambient" = ["assets/audio/ambient/*.wav"]
+"assets/zone1_the_beginning" = ["assets/zone1_the_beginning/*.png"]
+"assets/zone2_the_long_climb" = ["assets/zone2_the_long_climb/*.png"]
+"assets/zone3_poolrooms" = ["assets/zone3_poolrooms/*.png"]
+"assets/zone4_dark_hall" = ["assets/zone4_dark_hall/*.png"]
+"assets/zone5_vine_tunnel" = ["assets/zone5_vine_tunnel/*.png"]
+"assets/zone6_the_tower" = ["assets/zone6_the_tower/*.png"]

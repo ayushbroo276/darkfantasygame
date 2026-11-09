@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from PIL import Image
+
+ASSETS_DIR = Path(__file__).resolve().parents[1] / 'assets'
 
 w, h = 2048, 1024
 img = Image.new('RGB', (w, h))
@@ -13,5 +17,6 @@ for y in range(h):
     for x in range(w):
         px[x, y] = color
 
-img.save('sky.png')
-print('sky.png created')
+output_path = ASSETS_DIR / 'sky.png'
+img.save(output_path)
+print(f'{output_path} created')

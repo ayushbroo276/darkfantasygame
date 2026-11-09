@@ -1,6 +1,8 @@
 import random
+from pathlib import Path
 from PIL import Image, ImageDraw
 
+ASSETS_DIR = Path(__file__).resolve().parents[1] / 'assets'
 random.seed(7)
 SIZE = (256, 256)
 
@@ -33,7 +35,7 @@ add_cracks(d, 6, (40, 35, 20))
 for y in range(190, 256):          # dark grime at the bottom
     t = (y - 190) / 66
     d.line([(0, y), (255, y)], fill=(int(120 - 70 * t), int(105 - 60 * t), int(45 - 30 * t)))
-wall.save('wall.png')
+wall.save(ASSETS_DIR / 'wall.png')
 
 # ---- FLOOR: dark brown tiles ----
 floor = noisy_base((70, 60, 30), 10)
@@ -43,6 +45,6 @@ for x in (0, 128):
 for y in (0, 128):
     d.line([(0, y), (255, y)], fill=(35, 30, 15), width=3)
 add_cracks(d, 4, (25, 22, 10))
-floor.save('floor.png')
+floor.save(ASSETS_DIR / 'floor.png')
 
-print("wall.png and floor.png created")
+print("assets/wall.png and assets/floor.png created")

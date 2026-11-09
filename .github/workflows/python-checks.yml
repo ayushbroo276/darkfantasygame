@@ -19,4 +19,6 @@ jobs:
         with:
           python-version: "3.11"
       - name: Compile game scripts
-        run: python -m py_compile main.py game_zones.py
+        run: python -m compileall -q main.py game_zones.py src tools tests
+      - name: Check packaged game assets
+        run: python -m unittest discover -s tests -v
