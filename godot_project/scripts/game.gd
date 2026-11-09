@@ -1383,7 +1383,7 @@ func _register_custom_music(path: String, display_name: String) -> void:
 	_save_settings()
 	_start_music(true)
 	_set_music_picker_status("Now playing: %s" % track_name)
-	_update_soundtrack_selection_labels()
+	_refresh_soundtrack_options()
 
 
 func _refresh_soundtrack_options() -> void:
@@ -1394,7 +1394,6 @@ func _refresh_soundtrack_options() -> void:
 		child.free()
 	var ambience_heading := _make_label(soundtrack_tracks_container, "ZONE AMBIENCE", 14)
 	ambience_heading.custom_minimum_size.y = 28.0
-	ambience_heading.set_meta("soundtrack_heading", "ambience")
 	ambience_heading.set_meta("soundtrack_heading", "ambience")
 	for index in range(ZoneData.ZONES.size()):
 		var track := index + 1

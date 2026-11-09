@@ -1,90 +1,76 @@
-# Dark Fantasy (Godot)
+# Dark Fantasy — Godot
 
-This is a Godot/GDScript port of the six-zone Ursina game. The original Python
-project remains in the repository root and is not modified by the port.
+The six-zone GDScript port of the original Ursina game. This project targets
+Windows and Android and does not share or overwrite the Ursina save data.
 
-## Current validation status
+## Download
 
-The project has passed Godot 4.7.2 headless startup and the automated gameplay
-smoke test in `tests/smoke_test.gd`. The test exercises movement, jumping,
-sprinting, wall-running, checkpoint landing/saving, moving and timed platforms,
-pause/resume, completion/unlocks, loading all six zones, texture mapping, and
-custom-audio import/playback. The app label and title screen both display
-**Dark Fantasy**. A portable Windows export was built and launched
-in both headless and desktop modes on Intel integrated graphics. Input was
-simulated by the smoke test, not verified with a physical keyboard, mouse,
-touchscreen, or phone.
+Use the [latest GitHub release](https://github.com/ayushbroo276/darkfantasygame/releases/latest)
+for the current APK and desktop package. The Android preview APK supports
+`arm64-v8a` and `armeabi-v7a` and Android 7.0 (API 24) or later. It is
+debug-signed, not signed with a Play Store production key.
 
-The portable Windows package is generated under `build/windows/`. An earlier
-debug-signed Android APK was installed and launched on a realme RMX3762 running
-Android 15; landscape display, gameplay textures, and touch controls were
-visually confirmed. Testing 0.3.0 exposed that Android rejected bundled song
-paths. Version 0.4.2 fixes resource lookup, preserves all soundtrack names when
-selecting songs, pauses movement and camera-look while Settings is open, and
-selects Numbers for new installs. It passes the Godot smoke test, including
-selection of every bundled track; the new APK still needs phone verification.
-This is a preview build, not a Play Store/release-key-signed APK. Publishing the
-fixed APK is complete:
-[Dark Fantasy 0.4.2](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.2-android).
+## Features
 
-The six licensed MP3 tracks are bundled at `assets/audio/music/` and listed on
-the **Soundtrack** screen. Choose **Comfort**, **Numbers**, **Resonance**,
-**School**, **Weeks**, or **Undertale** to play that track during gameplay.
-You can also choose **ADD SONG FROM PHONE** on Android (or **ADD SONG** on
-desktop) to import another MP3, OGG, or WAV you have permission to use. Android
-opens the system document picker; the selected file is copied into the app's
-private music library and appears under **YOUR SONGS**. Additional imported
-songs are removed when the app is uninstalled.
+- Six themed zones with chapter progression, checkpoints, secrets, and completion.
+- First-person movement, jumping, sprinting, wall-running, and moving platforms.
+- Menus for pause, settings, and soundtrack selection; progress is saved locally.
+- Six included soundtrack tracks plus MP3, OGG, and WAV import.
+- Windows keyboard/mouse input and landscape Android touch controls.
+- Custom Dark Fantasy project and Android launcher icons.
 
-## Run in Godot
+## Run and build
 
-Open this directory in Godot 4.7 or later and run the main scene. The Windows
-controls are WASD, mouse look, Space, Left Shift, E (wall-run), and Escape.
-Android uses a landscape virtual joystick, touch camera, jump, sprint, wall-run,
-and settings controls.
+Open this directory in Godot 4.7.2 or later and run `scenes/main.tscn`.
 
-To play the included music, open **Settings** → **CHOOSE MUSIC** (or **SOUNDTRACK**
-from the title menu), then select a track under **INCLUDED SOUNDTRACKS**. To add
-another song from your phone, tap **ADD SONG FROM PHONE**, select an MP3, OGG,
-or WAV in Android's document picker, then choose the imported title under
-**YOUR SONGS**. The system picker still needs further physical-device testing.
+Windows controls: **WASD** move, mouse look, **Space** jump, **Left Shift**
+sprint, **E** wall-run, **Esc** pause. On Android, use the left joystick to move,
+the right side to look, and the on-screen buttons for actions and settings.
 
-Run the headless smoke test from the repository root:
+Install the matching Godot export templates. To run the automated smoke test
+from the repository root:
 
 ```powershell
 & 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --script res://tests/smoke_test.gd --audio-driver Dummy
 ```
 
-After installing the matching Godot export templates, build the portable Windows
-version from the repository root:
+Build a portable Windows version:
 
 ```powershell
 & 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --export-release 'Windows Desktop' '.\godot_project\build\windows\Dark Fantasy.exe'
 ```
 
-Distribute the generated executable and its adjacent `.pck` file together.
+Distribute the executable with its adjacent `.pck` file.
 
-To create the Android preview APK named `Dark-Fantasy.apk`, install the matching
-Android export templates and Gradle build template. Configure JDK 17 and Android SDK 36 (including
-Build-Tools 36.1.0) in Godot Editor Settings, then run from the repository root:
+Export the Android preview APK:
 
 ```powershell
 & 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --export-debug Android '.\godot_project\build\android\Dark-Fantasy.apk'
 ```
 
-Install the APK on an ARM Android device by opening it from the device's file
-manager and allowing installation from that source if Android asks. Version
-0.4.2 contains `arm64-v8a` and `armeabi-v7a` builds and requests Android 7.0
-(API 24) or later. Installation and launch of the earlier preview were
-confirmed on an RMX3762 running Android 15. The fixed soundtrack build, document
-picker, and other devices/resolutions still need testing. Do not
-redistribute it as a production-signed release.
+Configure JDK 17 and Android SDK 36 (including Build-Tools 36.1.0) in Godot
+Editor Settings before exporting. The Android preset enables immersive
+landscape mode and includes ARM64 and ARMv7 builds.
 
-The six zone courses are streamed around the player to reduce live object and
-collision counts on low-memory hardware. Rendering targets 30 FPS and disables
-real-time shadows. For Android, portrait-safe content scaling is not used:
-landscape canvas scaling expands to fill wider screens without stretching the
-3D view.
+## Soundtrack
 
-Progress and settings are stored under Godot's per-user `user://` directory,
-not in the Ursina save file.
+Choose **Comfort**, **Numbers**, **Resonance**, **School**, **Weeks**, or
+**Undertale** from the Soundtrack menu. A fresh install starts with **Numbers**.
+Choose **ADD SONG FROM PHONE** on Android or **ADD SONG** on Windows to import
+an MP3, OGG, or WAV you have permission to use. Phone imports are stored in the
+app's private library and are removed when the app is uninstalled.
+
+## Performance and testing
+
+The project uses the GL Compatibility renderer, 30 FPS target, streamed course
+platforms, and low-cost lighting for integrated graphics and mobile hardware.
+The smoke test checks the six zones, movement, jumping, sprinting, wall-running,
+platforms, checkpoints, soundtrack selection, pause/settings input, and icon
+resources. Device-specific performance, touch behavior, and Android document
+picker behavior still require testing on the target device.
+
+## Assets and permissions
+
+Generated launcher images live in `assets/android_icons/`; the supplied artwork
+is preserved there as `source_dark_fantasy.jpg`. Only distribute music or other
+assets when you have permission to do so.

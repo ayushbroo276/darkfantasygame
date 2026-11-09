@@ -20,6 +20,15 @@ func _run() -> void:
 	await process_frame
 	await physics_frame
 	_expect(ProjectSettings.get_setting("application/config/name") == "Dark Fantasy", "application name is Dark Fantasy")
+	_expect(ProjectSettings.get_setting("application/config/icon") == "res://assets/android_icons/launcher_icon_512.png", "custom launcher artwork is the project icon")
+	for icon_path in [
+		"res://assets/android_icons/launcher_icon_512.png",
+		"res://assets/android_icons/launcher_main_192.png",
+		"res://assets/android_icons/adaptive_foreground_432.png",
+		"res://assets/android_icons/adaptive_background_432.png",
+		"res://assets/android_icons/adaptive_monochrome_432.png",
+	]:
+		_expect(ResourceLoader.exists(icon_path), "custom Android icon resource is present: %s" % icon_path)
 	game.set("progress_path", "user://smoke_test_progress.json")
 	game.set("settings_path", "user://smoke_test_settings.cfg")
 	var smoke_settings_path := ProjectSettings.globalize_path("user://smoke_test_settings.cfg")
@@ -89,6 +98,12 @@ func _run() -> void:
 					listed = true
 					break
 			_expect(listed, "%s remains listed after selecting %s" % [listed_track["name"], track["name"]])
+		var selected_button_found := false
+		for child in soundtrack_container.get_children():
+			if child is Button and (child as Button).text == "%s   (NOW PLAYING)" % track["name"]:
+				selected_button_found = true
+				break
+		_expect(selected_button_found, "%s selection is indicated without replacing its name" % track["name"])
 	_expect(not bool(game.call("_music_path_exists", "res://missing_track.mp3")), "missing bundled music is reported unavailable")
 	game.call("_set_screen", "controls")
 	_expect(screens["controls"].visible, "controls menu opens")
@@ -268,9 +283,17 @@ func _run() -> void:
 	game.call("_on_desktop_audio_selected", sample_song_path)
 	var custom_tracks: Array = game.get("custom_music_tracks")
 	_expect(custom_tracks.size() == 1, "custom audio is added to the soundtrack library")
+	var custom_song_listed := false
+	for child in soundtrack_container.get_children():
+		if child is Button and (child as Button).text.begins_with(str(custom_tracks[0]["name"])):
+			custom_song_listed = true
+			break
+	_expect(custom_song_listed, "imported audio name remains visible in the soundtrack library")
 	_expect(game.get("selected_music_path") == custom_tracks[0]["path"], "imported audio is selected and persisted")
 	_expect(FileAccess.file_exists(str(custom_tracks[0]["path"])), "imported audio is copied into the app music library")
 	_expect(ambience_player.stream is AudioStreamWAV, "imported WAV is loaded into the music player")
+	_expect((ambience_player.stream as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_FORWARD, "imported WAV is configured to loop")
+	await process_frame
 	_expect(ambience_player.playing, "selected WAV audio plays as a loop (playing=%s)" % ambience_player.playing)
 	game.call("_select_ambience", 3)
 	_expect(str(game.get("selected_music_path")).is_empty(), "switching to zone ambience clears the custom song")

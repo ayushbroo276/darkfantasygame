@@ -14,7 +14,7 @@ config/name="Dark Fantasy"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 run/max_fps=30
-config/icon="res://assets/logo.png"
+config/icon="res://assets/android_icons/launcher_icon_512.png"
 
 [display]
 

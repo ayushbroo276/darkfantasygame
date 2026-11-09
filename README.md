@@ -1,103 +1,74 @@
 # Dark Fantasy
 
-The six-zone 3D parkour game has an original Python/Ursina desktop version and a
-Godot port for Windows and Android. Both include chapter progression,
-checkpoints, moving and timed obstacles, secrets, music selection, settings,
-and saved progress.
+**A six-zone dreamcore parkour game through surreal, liminal worlds.**
 
-## Status
+The repository includes the original Python/Ursina desktop game and a separate
+Godot/GDScript port for Windows and Android. The original Ursina project is kept
+alongside the port.
 
-- **Ursina:** the original Python project remains at the repository root and is
-  unchanged. It continues to target desktop Python.
-- **Godot:** a separate GDScript port named **Dark Fantasy** is in [`godot_project`](./godot_project/).
-  Its Godot 4.7.2 headless startup and gameplay smoke tests cover all six zones,
-  movement, jumping, sprinting, wall-running, checkpoints, moving/timed platforms,
-  and the principal menus. A portable Windows export has been built and launched
-  on this machine; keyboard/mouse interaction has not been physically tested.
-  The package is available at
-  `godot_project/build/windows/Dark Fantasy.exe` with its adjacent `.pck` file.
-- **Android:** the preview APK named `Dark-Fantasy.apk` includes all six licensed
-  soundtrack tracks and lets players import additional MP3, OGG, or WAV files.
-  Version 0.3.0 was installed and launched on a realme RMX3762 (Android 15), where
-  testing exposed soundtrack and touch-pause issues. Version 0.4.2 preserves
-  soundtrack button names when changing songs and prevents touch-look movement
-  while Settings is open. It starts new installs with Numbers and passes the
-  Godot gameplay/music-selection/pause smoke tests; it still needs phone
-  verification. The app and title screen are named **Dark Fantasy**.
-  This is a debug-signed preview, not a production release-key build. The current
-  downloadable build is the
-  [Dark Fantasy 0.4.2 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.2-android).
-- **GitHub release:** [Dark Fantasy 0.4.2](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.2-android).
+> **Get the latest game:** [Download the newest release](https://github.com/ayushbroo276/darkfantasygame/releases/latest)
+> — the release page is the recommended place to get the current Android APK
+> and any available desktop build.
 
-## Run on desktop
+## Explore
 
-Use Python 3.10 or newer, then install the game dependency and start the game:
+- Six atmospheric zones, checkpoints, moving platforms, and timed challenges.
+- First-person movement, jumping, sprinting, and wall-running.
+- Chapter progression, saved progress, completion screens, and pause/settings menus.
+- Six bundled soundtrack selections, with support for importing your own audio.
+- Windows keyboard/mouse controls and Android touch controls.
+
+## Play the Godot version
+
+Open [`godot_project`](./godot_project/) in **Godot 4.7.2** and run the main
+scene. On Windows, use **WASD** to move, the mouse to look, **Space** to jump,
+**Left Shift** to sprint, **E** to wall-run, and **Esc** to pause. Android uses a
+landscape joystick, touch camera, and on-screen action buttons.
+
+For a packaged game, use the [latest release](https://github.com/ayushbroo276/darkfantasygame/releases/latest).
+The Android preview APK supports ARM64 and ARMv7 devices and requires Android 7.0
+(API 24) or later. It is debug-signed, not signed with a Play Store production
+key. See the [Godot guide](./godot_project/README.md) for build instructions,
+music details, and current testing limitations.
+
+## Play the original Ursina version
+
+Use Python 3.10 or later:
 
 ```powershell
 python -m pip install -r requirements.txt
 python main.py
 ```
 
-Gameplay starts in fullscreen. Press **F11** to toggle fullscreen.
+Gameplay starts fullscreen; press **F11** to toggle fullscreen.
 
-## Run the Godot port
+## Project map
 
-Install Godot 4.7 or later, open the `godot_project` directory, and run the main
-scene. It targets 30 FPS with low-cost rendering defaults. Windows controls are
-WASD, mouse look, **Space** to jump, **Left Shift** to sprint, **E** to wall-run,
-and **Escape** to pause. Android uses a virtual joystick, touch camera, and
-on-screen action buttons.
+- `main.py`, `game_zones.py`, `zone*/` — original Python/Ursina game.
+- `godot_project/` — Godot scenes, scripts, assets, tests, and export settings.
+- `godot_project/assets/android_icons/` — launcher and adaptive icon artwork.
 
-The Godot port keeps its saves in Godot's per-user `user://` folder; it does not
-modify or reuse the Ursina `save.json`.
+The Godot port stores saves in its own per-user `user://` directory. Its
+licensed soundtrack files are bundled under `godot_project/assets/audio/music/`;
+only redistribute audio or other assets when you have permission to do so.
 
-## Controls
+## Verify
 
-| Action | Control |
-| --- | --- |
-| Move | WASD |
-| Look | Mouse |
-| Jump | Space |
-| Sprint | Hold Left Shift |
-| Wall run | Hold W beside a wall while airborne |
-| Pause | Esc |
-| Toggle fullscreen | F11 |
-| Quit | F10 |
+Run the Godot smoke test from the repository root with Godot 4.7.2:
 
-## Project layout
+```powershell
+& 'C:\path\to\Godot_v4.7.2-stable_win64_console.exe' --headless --path .\godot_project --script res://tests/smoke_test.gd --audio-driver Dummy
+```
 
-- `main.py` — game startup, player/controller, menus, saves, audio, and progression.
-- `game_zones.py` — six chapter themes, routes, obstacles, checkpoints, and scenery.
-- `zone1_the_beginning/` through `zone6_the_tower/` — chapter texture assets.
-- `zone*_ambient.wav` and `game_sfx.wav` — generated ambience and gameplay cue.
-
-Keep the six zone folders and WAV files beside `main.py`. The Ursina game uses
-locally supplied soundtrack MP3s beside `main.py`; those root copies remain
-ignored by Git. Licensed soundtrack copies used by the Godot game are stored in
-`godot_project/assets/audio/music/` and are bundled with that version. On Android,
-players can also import other MP3, OGG, or WAV files from the phone's system picker.
-
-Saved progress and settings are local (`save.json` and `settings.json`) and are
-ignored by Git.
-
-## Checks
-
-Run the same syntax check used by the GitHub Actions workflow:
+Check the original Python sources:
 
 ```powershell
 python -m py_compile main.py game_zones.py
 ```
 
-## Android preview limitations
+## Limitations
 
-The Android APK is a debug-signed preview (`arm64-v8a` and `armeabi-v7a`, minimum
-Android 7.0/API 24). Version 0.4.2 passes the Godot smoke test and APK
-signature/manifest/package checks, including all six bundled songs and
-automatic Numbers playback on a fresh install. Version
-0.3.0 was installed and launched on a realme RMX3762 running Android 15; testing
-found that bundled soundtrack selection was incorrectly rejected on Android.
-The resource lookup is fixed in 0.4.1, but that APK and the Android document
-picker still need device testing. The APK is not signed with a production
-release key and should not be submitted to an app store. Additional tracks
-imported from the phone stay in the app's private music library and are removed
-on uninstall.
+The Android APK is a debug-signed preview. Device-specific performance,
+touchscreen behavior, and imported-song support may vary; the latest release
+notes describe the tested hardware and known issues. Windows builds are portable
+and require the executable and its adjacent `.pck` file together.
