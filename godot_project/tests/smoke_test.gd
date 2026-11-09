@@ -68,6 +68,7 @@ func _run() -> void:
 	var built_in_tracks: Array = game.get_script().get_script_constant_map()["BUILT_IN_SOUNDTRACKS"]
 	_expect(built_in_tracks.size() == 6, "six built-in soundtrack choices are configured")
 	var soundtrack_container := game.get("soundtrack_tracks_container") as VBoxContainer
+	var soundtrack_child_count := soundtrack_container.get_child_count()
 	for track in built_in_tracks:
 		var track_path := str(track["path"])
 		_expect(ResourceLoader.exists(track_path), "%s soundtrack asset is present" % track["name"])
@@ -80,6 +81,14 @@ func _run() -> void:
 		_expect(track_listed, "%s appears in the soundtrack menu" % track["name"])
 		game.call("_select_music_track", track_path, str(track["name"]))
 		_expect(game.get("selected_music_path") == track_path, "%s can be selected" % track["name"])
+		_expect(soundtrack_container.get_child_count() == soundtrack_child_count, "selecting %s keeps the soundtrack list visible" % track["name"])
+		for listed_track in built_in_tracks:
+			var listed := false
+			for child in soundtrack_container.get_children():
+				if child is Button and (child as Button).text.begins_with(str(listed_track["name"])):
+					listed = true
+					break
+			_expect(listed, "%s remains listed after selecting %s" % [listed_track["name"], track["name"]])
 	_expect(not bool(game.call("_music_path_exists", "res://missing_track.mp3")), "missing bundled music is reported unavailable")
 	game.call("_set_screen", "controls")
 	_expect(screens["controls"].visible, "controls menu opens")
@@ -182,6 +191,22 @@ func _run() -> void:
 	_expect(not is_equal_approx(player.rotation.y, old_yaw), "touch drag rotates the camera")
 	game.call("_open_settings")
 	_expect(game.get("game_paused") and game.get("active_screen") == "settings", "mobile settings pause gameplay")
+	_expect(not player.can_control and game.get("look_pointer") == -1, "opening mobile settings clears active camera input")
+	var paused_yaw: float = player.rotation.y
+	game.call("_handle_screen_drag", drag)
+	_expect(is_equal_approx(player.rotation.y, paused_yaw), "touch drag cannot move the camera in settings")
+	var paused_touch := InputEventScreenTouch.new()
+	paused_touch.index = 8
+	paused_touch.pressed = true
+	paused_touch.position = Vector2(700.0, 300.0)
+	game.call("_handle_screen_touch", paused_touch)
+	_expect(game.get("look_pointer") == -1, "touches in settings cannot reactivate camera look")
+	var paused_position := player.global_position
+	var paused_elapsed := float(game.get("elapsed_time"))
+	game.call("_process", 1.0)
+	game.call("_physics_process", 1.0)
+	_expect(is_equal_approx(float(game.get("elapsed_time")), paused_elapsed), "game timer remains paused in settings")
+	_expect(player.global_position.is_equal_approx(paused_position), "player remains still in settings")
 	game.call("_set_screen", game.get("previous_screen"))
 	_expect(game.get("active_screen") == "pause", "mobile settings return to pause menu")
 	game.call("_set_paused", false)

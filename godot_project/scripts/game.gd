@@ -208,7 +208,7 @@ func _input(event: InputEvent) -> void:
 			_set_screen("title")
 			get_viewport().set_input_as_handled()
 		return
-	if not gameplay_active or not is_mobile:
+	if not gameplay_active or not is_mobile or game_paused:
 		return
 	if event is InputEventScreenTouch:
 		_handle_screen_touch(event)
@@ -217,6 +217,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _handle_screen_touch(event: InputEventScreenTouch) -> void:
+	if game_paused:
+		return
 	var size := get_viewport().get_visible_rect().size
 	if event.pressed:
 		touch_origins[event.index] = event.position
@@ -237,6 +239,8 @@ func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 
 
 func _handle_screen_drag(event: InputEventScreenDrag) -> void:
+	if game_paused:
+		return
 	if event.index == joystick_pointer:
 		_update_joystick(event.position)
 	elif event.index == look_pointer:
@@ -784,6 +788,7 @@ func _return_to_title() -> void:
 func _set_paused(paused: bool) -> void:
 	game_paused = paused
 	if paused:
+		_clear_mobile_input()
 		player.set_gameplay_active(false, is_mobile)
 		ambience_player.stop()
 		_set_screen("pause")
@@ -801,6 +806,20 @@ func _set_screen(screen_name: String) -> void:
 		hud.visible = gameplay_active
 	elif screen_name != "pause" and screen_name != "settings":
 		hud.visible = false
+
+
+func _clear_mobile_input() -> void:
+	joystick_pointer = -1
+	look_pointer = -1
+	touch_origins.clear()
+	joystick_vector = Vector2.ZERO
+	if is_instance_valid(player):
+		player.mobile_movement = Vector2.ZERO
+		player.mobile_jump = false
+		player.mobile_sprint = false
+		player.mobile_wall_run = false
+	if is_instance_valid(joystick_knob):
+		joystick_knob.position = Vector2(40.0, 40.0)
 
 
 func _start_ambience() -> void:
@@ -1251,8 +1270,11 @@ func _open_settings() -> void:
 	if gameplay_active and not game_paused:
 		previous_screen = "pause"
 		game_paused = true
+		_clear_mobile_input()
 		player.set_gameplay_active(false, is_mobile)
 		ambience_player.stop()
+	elif game_paused:
+		_clear_mobile_input()
 	_set_screen("settings")
 
 
@@ -1284,7 +1306,7 @@ func _select_ambience(track: int) -> void:
 	_save_progress()
 	_save_settings()
 	_start_music(true)
-	_refresh_soundtrack_options()
+	_update_soundtrack_selection_labels()
 
 
 func _open_music_picker() -> void:
@@ -1361,7 +1383,7 @@ func _register_custom_music(path: String, display_name: String) -> void:
 	_save_settings()
 	_start_music(true)
 	_set_music_picker_status("Now playing: %s" % track_name)
-	_refresh_soundtrack_options()
+	_update_soundtrack_selection_labels()
 
 
 func _refresh_soundtrack_options() -> void:
@@ -1370,24 +1392,25 @@ func _refresh_soundtrack_options() -> void:
 	for child in soundtrack_tracks_container.get_children():
 		soundtrack_tracks_container.remove_child(child)
 		child.free()
-	var selected_label := "  (NOW PLAYING)" if selected_music_path.is_empty() else ""
-	var ambience_heading := _make_label(soundtrack_tracks_container, "ZONE AMBIENCE%s" % selected_label, 14)
+	var ambience_heading := _make_label(soundtrack_tracks_container, "ZONE AMBIENCE", 14)
 	ambience_heading.custom_minimum_size.y = 28.0
+	ambience_heading.set_meta("soundtrack_heading", "ambience")
+	ambience_heading.set_meta("soundtrack_heading", "ambience")
 	for index in range(ZoneData.ZONES.size()):
 		var track := index + 1
 		var label := "%02d   %s" % [track, str(ZoneData.zone(track)["name"]).to_upper()]
-		if selected_music_path.is_empty() and selected_ambience == track:
-			label += "   (NOW PLAYING)"
 		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
+		button.set_meta("ambience_track", track)
+		button.set_meta("track_label", label)
 		button.pressed.connect(_select_ambience.bind(track))
 	var included_heading := _make_label(soundtrack_tracks_container, "INCLUDED SOUNDTRACKS", 14)
 	included_heading.custom_minimum_size.y = 28.0
 	for track in BUILT_IN_SOUNDTRACKS:
 		var path := str(track["path"])
 		var label := str(track["name"])
-		if selected_music_path == path:
-			label += "   (NOW PLAYING)"
 		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
+		button.set_meta("music_path", path)
+		button.set_meta("track_label", label)
 		button.pressed.connect(_select_music_track.bind(path, str(track["name"])))
 	if not custom_music_tracks.is_empty():
 		var library_heading := _make_label(soundtrack_tracks_container, "YOUR SONGS", 14)
@@ -1395,10 +1418,28 @@ func _refresh_soundtrack_options() -> void:
 	for track in custom_music_tracks:
 		var path := str(track["path"])
 		var label := str(track["name"])
-		if selected_music_path == path:
-			label += "   (NOW PLAYING)"
 		var button := _make_button(soundtrack_tracks_container, label, Vector2(380.0, 40.0), 16)
+		button.set_meta("music_path", path)
+		button.set_meta("track_label", label)
 		button.pressed.connect(_select_music_track.bind(path, str(track["name"])))
+	_update_soundtrack_selection_labels()
+
+
+func _update_soundtrack_selection_labels() -> void:
+	for child in soundtrack_tracks_container.get_children():
+		if child is Label and child.has_meta("soundtrack_heading"):
+			var heading := child as Label
+			heading.text = "ZONE AMBIENCE  (NOW PLAYING)" if selected_music_path.is_empty() else "ZONE AMBIENCE"
+		elif child is Button:
+			var button := child as Button
+			var label := str(button.get_meta("track_label", button.text))
+			if button.has_meta("music_path"):
+				if selected_music_path == str(button.get_meta("music_path")):
+					label += "   (NOW PLAYING)"
+			elif button.has_meta("ambience_track"):
+				if selected_music_path.is_empty() and selected_ambience == int(button.get_meta("ambience_track")):
+					label += "   (NOW PLAYING)"
+			button.text = label
 
 
 func _select_music_track(path: String, track_name: String) -> void:
@@ -1415,7 +1456,7 @@ func _select_music_track(path: String, track_name: String) -> void:
 	_save_settings()
 	_start_music(true)
 	_set_music_picker_status("Now playing: %s" % track_name)
-	_refresh_soundtrack_options()
+	_update_soundtrack_selection_labels()
 
 
 func _set_default_music_selection() -> void:
