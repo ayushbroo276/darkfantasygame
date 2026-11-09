@@ -6,6 +6,7 @@ const PlayerScript = preload("res://scripts/player_controller.gd")
 const SAVE_PATH := "user://progress.json"
 const SETTINGS_PATH := "user://settings.cfg"
 const MUSIC_LIBRARY_PATH := "user://music"
+const DEFAULT_MUSIC_PATH := "res://assets/audio/music/numbers.mp3"
 const BUILT_IN_SOUNDTRACKS := [
 	{"path": "res://assets/audio/music/comfort.mp3", "name": "Comfort"},
 	{"path": "res://assets/audio/music/numbers.mp3", "name": "Numbers"},
@@ -54,8 +55,9 @@ var elapsed_time := 0.0
 var checkpoint_notice_time := 0.0
 var tutorial_notice_time := 0.0
 var selected_ambience := 1
-var selected_music_path := ""
-var selected_music_name := ""
+var selected_music_path := DEFAULT_MUSIC_PATH
+var selected_music_name := "Numbers"
+var music_selection_explicit := false
 var custom_music_tracks: Array[Dictionary] = []
 var ambience_player: AudioStreamPlayer
 var sfx_player: AudioStreamPlayer
@@ -814,8 +816,8 @@ func _start_music(preview := false) -> void:
 			stream = _load_music_stream(selected_music_path)
 		if stream == null:
 			push_warning("The selected song could not be opened: %s" % selected_music_path)
-			selected_music_path = ""
-			selected_music_name = ""
+			_set_default_music_selection()
+			stream = _load_music_stream(selected_music_path)
 			_save_settings()
 	if stream == null:
 		var track := selected_ambience
@@ -936,6 +938,8 @@ func _load_settings() -> void:
 	var config := ConfigFile.new()
 	var result := config.load(settings_path)
 	if result == ERR_FILE_NOT_FOUND:
+		if not music_selection_explicit:
+			_set_default_music_selection()
 		return
 	if result != OK:
 		push_warning("Could not read settings: %s" % error_string(result))
@@ -945,8 +949,10 @@ func _load_settings() -> void:
 	settings["mouse_sensitivity"] = clampf(float(config.get_value("controls", "mouse_sensitivity", 0.0025)), 0.001, 0.006)
 	settings["graphics"] = str(config.get_value("video", "graphics", "low"))
 	settings["show_fps"] = bool(config.get_value("video", "show_fps", false))
-	selected_music_path = str(config.get_value("audio", "selected_music_path", ""))
+	var has_saved_music_path := config.has_section_key("audio", "selected_music_path")
+	selected_music_path = str(config.get_value("audio", "selected_music_path", DEFAULT_MUSIC_PATH))
 	selected_music_name = str(config.get_value("audio", "selected_music_name", ""))
+	music_selection_explicit = bool(config.get_value("audio", "music_selection_explicit", has_saved_music_path and not selected_music_path.is_empty()))
 	var saved_tracks: Variant = config.get_value("audio", "custom_music_tracks", [])
 	if saved_tracks is Array:
 		for track in saved_tracks:
@@ -958,8 +964,9 @@ func _load_settings() -> void:
 				continue
 			custom_music_tracks.append({"path": path, "name": name})
 	if not selected_music_path.is_empty() and not _music_path_exists(selected_music_path):
-		selected_music_path = ""
-		selected_music_name = ""
+		_set_default_music_selection()
+	elif selected_music_path.is_empty() and not music_selection_explicit:
+		_set_default_music_selection()
 
 
 func _save_settings() -> void:
@@ -972,6 +979,7 @@ func _save_settings() -> void:
 	config.set_value("audio", "custom_music_tracks", custom_music_tracks)
 	config.set_value("audio", "selected_music_path", selected_music_path)
 	config.set_value("audio", "selected_music_name", selected_music_name)
+	config.set_value("audio", "music_selection_explicit", music_selection_explicit)
 	var result := config.save(settings_path)
 	if result != OK:
 		push_warning("Could not save settings: %s" % error_string(result))
@@ -1271,6 +1279,7 @@ func _create_soundtrack_screen() -> void:
 func _select_ambience(track: int) -> void:
 	selected_music_path = ""
 	selected_music_name = ""
+	music_selection_explicit = true
 	selected_ambience = track
 	_save_progress()
 	_save_settings()
@@ -1348,6 +1357,7 @@ func _register_custom_music(path: String, display_name: String) -> void:
 		custom_music_tracks.append({"path": path, "name": track_name})
 	selected_music_path = path
 	selected_music_name = track_name
+	music_selection_explicit = true
 	_save_settings()
 	_start_music(true)
 	_set_music_picker_status("Now playing: %s" % track_name)
@@ -1401,10 +1411,17 @@ func _select_music_track(path: String, track_name: String) -> void:
 		return
 	selected_music_path = path
 	selected_music_name = track_name
+	music_selection_explicit = true
 	_save_settings()
 	_start_music(true)
 	_set_music_picker_status("Now playing: %s" % track_name)
 	_refresh_soundtrack_options()
+
+
+func _set_default_music_selection() -> void:
+	selected_music_path = DEFAULT_MUSIC_PATH
+	selected_music_name = "Numbers"
+	music_selection_explicit = false
 
 
 func _set_music_picker_status(message: String) -> void:

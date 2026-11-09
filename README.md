@@ -19,13 +19,14 @@ and saved progress.
 - **Android:** the preview APK named `Dark-Fantasy.apk` includes all six licensed
   soundtrack tracks and lets players import additional MP3, OGG, or WAV files.
   Version 0.3.0 was installed and launched on a realme RMX3762 (Android 15), where
-  testing exposed a bundled-song selection bug. Version 0.4.0 fixes resource
-  lookup and passes the Godot gameplay/music-selection smoke tests; it still
-  needs phone verification. The app and title screen are named **Dark Fantasy**.
+  testing exposed a bundled-song selection bug. Version 0.4.1 fixes resource
+  lookup, starts new installs with Numbers, and passes the Godot
+  gameplay/music-selection smoke tests; it still needs phone verification. The
+  app and title screen are named **Dark Fantasy**.
   This is a debug-signed preview, not a production release-key build. The current
   downloadable build is the
-  [Dark Fantasy 0.4.0 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.0-android).
-- **GitHub release:** [Dark Fantasy 0.4.0](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.0-android).
+  [Dark Fantasy 0.4.1 release](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.1-android).
+- **GitHub release:** [Dark Fantasy 0.4.1](https://github.com/ayushbroo276/darkfantasygame/releases/tag/v0.4.1-android).
 
 ## Run on desktop
 
@@ -89,11 +90,12 @@ python -m py_compile main.py game_zones.py
 ## Android preview limitations
 
 The Android APK is a debug-signed preview (`arm64-v8a` and `armeabi-v7a`, minimum
-Android 7.0/API 24). Version 0.4.0 passes the Godot smoke test and APK
-signature/manifest/package checks, including all six bundled songs. Version
+Android 7.0/API 24). Version 0.4.1 passes the Godot smoke test and APK
+signature/manifest/package checks, including all six bundled songs and
+automatic Numbers playback on a fresh install. Version
 0.3.0 was installed and launched on a realme RMX3762 running Android 15; testing
 found that bundled soundtrack selection was incorrectly rejected on Android.
-The resource lookup is fixed in 0.4.0, but that APK and the Android document
+The resource lookup is fixed in 0.4.1, but that APK and the Android document
 picker still need device testing. The APK is not signed with a production
 release key and should not be submitted to an app store. Additional tracks
 imported from the phone stay in the app's private music library and are removed

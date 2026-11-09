@@ -22,6 +22,15 @@ func _run() -> void:
 	_expect(ProjectSettings.get_setting("application/config/name") == "Dark Fantasy", "application name is Dark Fantasy")
 	game.set("progress_path", "user://smoke_test_progress.json")
 	game.set("settings_path", "user://smoke_test_settings.cfg")
+	var smoke_settings_path := ProjectSettings.globalize_path("user://smoke_test_settings.cfg")
+	if FileAccess.file_exists("user://smoke_test_settings.cfg"):
+		DirAccess.remove_absolute(smoke_settings_path)
+	game.set("selected_music_path", "")
+	game.set("selected_music_name", "")
+	game.set("music_selection_explicit", false)
+	game.call("_load_settings")
+	_expect(game.get("selected_music_path") == "res://assets/audio/music/numbers.mp3", "Numbers is the default soundtrack on a fresh install")
+	_expect(game.get("selected_music_name") == "Numbers", "fresh-install default is labeled Numbers")
 	game.set("unlocked_zones", [1])
 	game.set("saved_current_zone", 1)
 	(game.get("checkpoint_by_zone") as Dictionary).clear()
@@ -75,9 +84,13 @@ func _run() -> void:
 	game.call("_set_screen", "controls")
 	_expect(screens["controls"].visible, "controls menu opens")
 
+	game.call("_set_default_music_selection")
 	game.call("_start_game", 1, false)
 	await physics_frame
 	await physics_frame
+	var ambience_player := game.get("ambience_player") as AudioStreamPlayer
+	_expect(game.get("selected_music_path") == "res://assets/audio/music/numbers.mp3", "starting gameplay selects Numbers by default")
+	_expect(ambience_player.stream is AudioStreamMP3 and ambience_player.playing, "Numbers starts playing automatically during gameplay")
 	var player := game.get("player") as CharacterBody3D
 	_expect(game.get("gameplay_active") and game.get("current_zone") == 1, "zone 1 starts")
 	_expect(game.get("platforms").size() >= 20, "nearby course platforms stream in")
@@ -220,7 +233,6 @@ func _run() -> void:
 
 	var bundled_track: Dictionary = built_in_tracks[2]
 	game.call("_select_music_track", str(bundled_track["path"]), str(bundled_track["name"]))
-	var ambience_player := game.get("ambience_player") as AudioStreamPlayer
 	_expect(game.get("selected_music_path") == bundled_track["path"], "built-in soundtrack selection is persisted")
 	_expect(ambience_player.stream is AudioStreamMP3, "built-in MP3 is loaded into the music player")
 	_expect((ambience_player.stream as AudioStreamMP3).loop, "built-in MP3 is set to loop")
@@ -237,6 +249,7 @@ func _run() -> void:
 	_expect(ambience_player.playing, "selected WAV audio plays as a loop (playing=%s)" % ambience_player.playing)
 	game.call("_select_ambience", 3)
 	_expect(str(game.get("selected_music_path")).is_empty(), "switching to zone ambience clears the custom song")
+	_expect(bool(game.get("music_selection_explicit")), "manual ambience choice is recorded")
 	_expect(game.get("selected_ambience") == 3, "soundtrack selection persists")
 	var all_unlocked: Array = game.get("unlocked_zones")
 	for zone_number in range(3, 7):
